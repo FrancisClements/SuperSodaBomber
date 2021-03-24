@@ -406,14 +406,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   savePath: 
-  m_JumpForce: 475
-  m_MovementSmoothing: 0.15
+  m_JumpForce: 450
+  m_MovementSmoothing: 0.133
   m_WhatIsGround:
     serializedVersion: 2
     m_Bits: 2560
   m_GroundCheck: {fileID: 1274516751}
   buttonDetector: {fileID: 1721290435}
   OnLandEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  chosenAbility: 2
+  m_AbilityEvent:
     m_PersistentCalls:
       m_Calls: []
 --- !u!114 &89766935
@@ -447,8 +451,7 @@ MonoBehaviour:
   savePath: 
   attackSource: {fileID: 266886288}
   attackHandSource: {fileID: 1926458545}
-  projectilePrefab: {fileID: 6203182048443516713, guid: 09872e166ce9a9a4bbf25995a5c991a0,
-    type: 3}
+  projectileName: Shotgun
 --- !u!70 &89766937
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
@@ -6015,7 +6018,7 @@ MonoBehaviour:
     ModeOverride: 0
     LensShift: {x: 0, y: 0}
     GateFit: 2
-    m_SensorSize: {x: 1.777403, y: 1}
+    m_SensorSize: {x: 1.7777778, y: 1}
   m_Transitions:
     m_BlendHint: 0
     m_InheritPosition: 0
@@ -6032,7 +6035,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1078728655}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: -1}
-  m_LocalPosition: {x: 3.623074, y: -2.99, z: 0.022960663}
+  m_LocalPosition: {x: 3.6230054, y: -2.99, z: 0.022960663}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 1385053691}
@@ -7010,7 +7013,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1524053558}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: -1}
-  m_LocalPosition: {x: 3.623074, y: -2.99, z: 0.022960663}
+  m_LocalPosition: {x: 3.6230054, y: -2.99, z: 0.022960663}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 231876222}

@@ -30,7 +30,9 @@ public class PlayerAttack : PublicScripts
     public Transform attackHandSource;
 
     //weapon prefab (fix this to make it more flexible)
-    public GameObject projectilePrefab;
+    private GameObject projectilePrefab;
+    public string projectileName;
+    private bool isPrefabConfig;
 
     //firing properties
     private float fireRate;
@@ -47,16 +49,23 @@ public class PlayerAttack : PublicScripts
     // Start is called before the first frame update
     void Awake()
     {
+        ProjectileProcessor.Init();
         isCreated = false;
+        isPrefabConfig = false;
         attackTime = 0;
     }
 
     public void Attack(bool isMoving, bool attack){
-
         //creates a projectile clone
 		if (attack && (attackTime <= Time.time && !isCreated)){
+
+            if (!isPrefabConfig){
+                projectilePrefab = ProjectileProcessor.GetPrefab(projectileName);
+                isPrefabConfig = true;
+            }
+
             //set the shotgun location to attackhandsource
-                if (DetermineType(projectilePrefab) == ProjectileManager.Type.Shotgun)
+                if (projectileName == "shotgun")
                     projectile = Instantiate(projectilePrefab, attackHandSource.position, 
                     attackHandSource.rotation);
                 else
@@ -68,7 +77,7 @@ public class PlayerAttack : PublicScripts
 
             //updates and fetches projectile's data
             projectileScript.SetPlayerMoving(isMoving);
-            fireRate = fireRates[projectileScript.GetPName()];
+            fireRate = fireRates[projectileScript.GetName()];
             explodeType = projectileScript.GetExplosionType();
 
             //adds the score and updates the attack time
@@ -77,6 +86,7 @@ public class PlayerAttack : PublicScripts
 
             //start waiting if it's a detonation projectile
             if (explodeType == explosionType.Detonate){
+                Debug.Log("set isCreated to true");
                 coro = projectileScript.coro;
                 isCreated = true;
             }
@@ -84,6 +94,8 @@ public class PlayerAttack : PublicScripts
 
         //detonate the projectile using the button
         else if (attack && projectileScript != null && isCreated){
+            Debug.Log("Detonated");
+
             StopCoroutine(coro);
             projectileScript.DetonateProjectile();
             isCreated = false;
@@ -95,8 +107,4 @@ public class PlayerAttack : PublicScripts
         }
 	}
 
-    ProjectileManager.Type DetermineType(GameObject prefab){
-        ProjectileManager prefabScript = prefab.GetComponent<ProjectileManager>();
-        return prefabScript.type;
-    }
 }

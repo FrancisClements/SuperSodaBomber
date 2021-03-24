@@ -16,7 +16,7 @@ PublicScripts
 public class PublicScripts : MonoBehaviour
 {
     //list of non-projectile scores
-    protected Dictionary<string, int> scores = new Dictionary<string, int>(){
+    protected readonly Dictionary<string, int> scores = new Dictionary<string, int>(){
         {"jump", 10},
         {"checkpoint", 125},
         {"fire", 10}
@@ -29,7 +29,7 @@ public class PublicScripts : MonoBehaviour
             
             you can find the name of the projectile at Projectile.cs, p_name
     */
-    protected Dictionary<string, int> projScores = new Dictionary<string, int>(){
+    protected readonly Dictionary<string, int> projScores = new Dictionary<string, int>(){
         {"sodaBomb_s", 15},
         {"sodaBomb_m", 30},
         {"sodaBomb_l", 75},
@@ -40,7 +40,7 @@ public class PublicScripts : MonoBehaviour
     };
 
     //description constants
-    protected Dictionary<string,string> descriptions = new Dictionary<string, string>(){
+    protected readonly Dictionary<string,string> descriptions = new Dictionary<string, string>(){
         {"checkSave", "Checkpoint Saved!"},
         {"confirmQuit", "Are sure you want to exit the level?"},
         {"confirmCheckpoint", "Are you sure you want to load the last checkpoint?"},
@@ -48,10 +48,10 @@ public class PublicScripts : MonoBehaviour
     };
 
     //firing rates of the weapons (shows cooldown in secs)
-    protected Dictionary <string, float> fireRates = new Dictionary <string, float>(){
+    protected readonly Dictionary <string, float> fireRates = new Dictionary <string, float>(){
         {"sodaBomb", .6f},
-        {"pistol", .4f},
-        {"bigCluster", 1.2f},
+        {"fizztol", .4f},
+        {"cannade", 1.2f},
         {"shotgun", .8f}
 
     };
@@ -61,7 +61,7 @@ public class PublicScripts : MonoBehaviour
             if it's an explosive, add _max and _min for damage range
             otherwise, add the name as is
     */
-    protected Dictionary <string, float> projDamage = new Dictionary<string, float>(){
+    protected readonly Dictionary <string, float> projDamage = new Dictionary<string, float>(){
         {"sodaBomb_max", 50f},
         {"sodaBomb_min", 20f},
         {"smallCluster_max", 30f},
@@ -71,6 +71,9 @@ public class PublicScripts : MonoBehaviour
     };
 
     //explosion types
+    /// <summary>
+    /// Explosion Type of the Projectile
+    /// </summary>
     public enum explosionType{
         Contact = 0,        //collision triggers explosion (default)
         Detonate,           //player or time triggers explosion
@@ -84,18 +87,24 @@ public class PublicScripts : MonoBehaviour
     //used for save/load processes
     public BinaryFormatter bf = new BinaryFormatter();
 
-    //Moves the Scene
+    /// <summary>
+    /// Moves to selected scene
+    /// </summary>
     public void _Move(string scene){
         SceneManager.LoadScene(sceneName: scene);
     }
     
-    //Toggles on/off the prompt
+    /// <summary>
+    /// Toggles on/off the selected prompt
+    /// </summary>
     public void _TogglePrompt(GameObject prompt){
         bool status = prompt.activeInHierarchy;
         prompt.SetActive(!status);
     }
 
-    //delete data
+    /// <summary>
+    /// Deletes saved data
+    /// </summary>
     public void ClearData(){
         File.Delete(savePath);
     }
@@ -104,4 +113,10 @@ public class PublicScripts : MonoBehaviour
     void Awake(){
         savePath = Application.persistentDataPath + "saved_data.soda";
     }
+}
+
+//this will be used on abilities
+public enum PlayerAbilities
+{
+    None, LongJump, DoubleJump, Dash
 }

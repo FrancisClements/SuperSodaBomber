@@ -14,7 +14,6 @@ using UnityEngine.EventSystems;
 public class DetectButtonPress : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
 {
 	private bool isPressed;
-	//test
 	public void OnPointerDown(PointerEventData eventData){
 		isPressed = true;
 	}

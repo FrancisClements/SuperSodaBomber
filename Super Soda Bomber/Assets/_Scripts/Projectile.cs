@@ -21,7 +21,7 @@ using System;
 */
 
 //main class. all projectiles will inhertit this class
-public class Projectile: PublicScripts{
+public abstract class Projectile: PublicScripts{
 
     /*it turns out that using "protected" keyword can be used
     by the class itself and by the class that inherits it.
@@ -30,6 +30,7 @@ public class Projectile: PublicScripts{
 
 
     //metadata
+    /// <summary>Projectile name</summary>
     public string p_name = "sodaBomb";
 
     //projectile attributes
@@ -41,14 +42,16 @@ public class Projectile: PublicScripts{
     
     //explosion attributes
     protected float blastRadius = 2.5f;
-    protected bool isExplosive = true;      //provide blast damage + explosion fx
-    public explosionType selectedType;      //selected explosiontype
-    public bool onDetonation = false;       //explode by the player rather on contact
-    public float detonateTime = 0f;         //time until the projectile explodes by itself
+    /// <summary>Provides blast damage + explosion fx </summary>
+    protected bool isExplosive = true;
+    /// <summary>Selected Explosion Type</summary>
+    public explosionType selectedType;
+    /// <summary>Time until the projectile explodes by itself</summary>
+    public float detonateTime = 0f;
 
 
     //moving player mechanic 
-    //adds a multiplier to throwX when the player is moving
+    /// <summary>Adds a multiplier to throwX when the player is moving</summary>
     protected float throwingMultiplier = 2.5f;
     protected bool applyMovingMechanic = true;
 
@@ -135,25 +138,26 @@ public class Projectile: PublicScripts{
 }
 
 //PROJECTILE TYPES
+
 /*
     Soda Bomb
-        A projectile that fires on a curve. It explodes
-        on contact.
-
+        A projectile that fires on a curve. It explodes on contact.
         This is Fizzy's stock weapon.
 */
+
 //Default values of Projectile is SodaBomb
 public class SodaBomb: Projectile{}
 
 /*
-    Pistol (Fizztol)
+    Fizztol
         A projectile that fires on a straight line.
         It attacks enemy on contact and doesn't explode.
 */
+
 public class Fizztol: Projectile{
 
     void Awake(){
-        p_name = "pistol";
+        p_name = "fizztol";
         //throwing physics
         throwX = 4f;
         throwY = 0;
@@ -166,21 +170,20 @@ public class Fizztol: Projectile{
 }
 
 /*
-    Big Cluster Bomb (Cannade Phase 1)
-        A projectile that fires on a curve. When detonated
-        or waited on several seconds, it will let out
-        small group of cluster bomb
+    Cannad
+        A projectile that fires on a curve. When detonate 
+        or waited within several seconds, it will let out
+        a small group of cluster bombs
 */
 
-public class BigCluster: Projectile{
+public class Cannade: Projectile{
 
     private int clusterAmount = 5;
 
     void Awake(){
         selectedType = explosionType.Detonate;
         spin = 10f;
-        p_name = "bigCluster";
-        onDetonation = true;
+        p_name = "cannade";
         detonateTime = 2f;
 
     }
@@ -202,9 +205,9 @@ public class BigCluster: Projectile{
 }
 
 /*
-    Small Cluster Bomb (Cannade Phase 2)
+    Small Cluster (Cannade Phase 2)
         Small bomb that spawns in a small group from the Cannade Phase 1.
-        It provides a small blast radius, damage and explodes in set time.
+        It provides a small blast radius, damage and explodes in set time
 */
 
 public class SmallCluster: Projectile{
@@ -217,7 +220,7 @@ public class SmallCluster: Projectile{
         throwY = UnityEngine.Random.Range(-100,100);
         blastRadius = 1.5f;
         applyMovingMechanic = false;
-        detonateTime = 3f;
+        detonateTime = 3f + UnityEngine.Random.Range(0f, .25f);
     }
 }
 
@@ -247,7 +250,7 @@ public class Shotgun: Projectile{
 }
 
 /*
-    Shotgun Pellet (Sfizz)
+    Shotgun Pellet (Sfizz) (internal)
         Small projectiles that inflict large damage the closer it hits the enemy
         It has a short reach.
 */

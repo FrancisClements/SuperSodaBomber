@@ -35,29 +35,8 @@ public class ProjectileManager : PublicScripts
 
     void Awake()
     {
-        //sets the projectile according to enum
-        switch (type){
-            case Type.Pistol:
-                s_Projectile = gameObject.AddComponent<Fizztol>();
-                break;
-            case Type.Cluster:
-                s_Projectile = gameObject.AddComponent<BigCluster>();
-                break;
-            case Type.Shotgun:
-                s_Projectile = gameObject.AddComponent<Shotgun>();
-                break;
-            //internal projectiles
-            case Type.pellet:
-                s_Projectile = gameObject.AddComponent<Pellet>();
-                break;
-            case Type.smallCluster:
-                s_Projectile = gameObject.AddComponent<SmallCluster>();
-                break;
-            //soda bomb
-            default:
-                s_Projectile = gameObject.AddComponent<SodaBomb>();
-                break;
-        }
+        //adds component
+        s_Projectile = ProjectileProcessor.ConfigureComponent(gameObject);
         //activates delayed detonation for some projectiles
         explosionType explodeType = GetExplosionType();
 
@@ -84,45 +63,55 @@ public class ProjectileManager : PublicScripts
         }
     }
 
+    /// <summary>
+    /// Waits for an amount of time and then automatically detonates it.
+    /// </summary>
     public IEnumerator WaitUntilDetonate(){
         //sets up waiting time
         float waitingTime = GetDetonateTime();
-        if (type == Type.smallCluster)
-            waitingTime += UnityEngine.Random.Range(0f, .25f);
 
         //waits for a short amount of time before exploding/despawning it.
         yield return new WaitForSeconds(waitingTime);
         DetonateProjectile();
     }
 
-    //explodes the projectile without the use of colliders
+    /// <summary>
+    /// Explodes the projectile without the use of colliders
+    /// </summary>
     public void DetonateProjectile(){
         ExplodeProjectile();
     }
-
+    
+    /// <summary>
+    /// Explodes the projectile.
+    /// </summary>
+    /// <param name="col">collider message</param>
     public void ExplodeProjectile(Collider2D col = null){
         s_Projectile.Explode(col, explosion);
         Destroy(gameObject);
     }
 
     //getters and setters
+    /// <summary>
+    /// Updates the PlayerMoving.
+    /// </summary>
+    /// <param name="moving">status of the player movement</param>
     public void SetPlayerMoving(bool moving){
         playerMoving = moving;
     }
 
+    /// <returns>Explosion Type of the projectile</returns>
     public Projectile.explosionType GetExplosionType(){
         return s_Projectile.selectedType;
     }
 
-    public string GetPName(){
+    /// <returns>Projectile Name</returns>
+    public string GetName(){
         return s_Projectile.p_name;
     }
 
+    /// <returns>Detonation Time of the Projectile</returns>
     public float GetDetonateTime(){
         return s_Projectile.detonateTime;
-    }
-
-    public Type GetProjType(){
-        return type;
     }
 }

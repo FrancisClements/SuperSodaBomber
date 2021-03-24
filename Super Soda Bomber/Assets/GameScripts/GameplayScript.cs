@@ -51,11 +51,13 @@ public class GameplayScript : PublicScripts
         current = this;
     }
 
-    //adds score
+    /// <summary>
+    /// Adds and updates the score
+    /// </summary>
+    /// <param name="amount">score to add</param>
     public void AddScore(int amount){
-        // if (e_AddScore != null){
+        if(amount > 0)
             score += amount;
-        // }
     }
 
     public void SetCheckpoint(Vector3 checkpointCoords, string name){
@@ -74,6 +76,8 @@ public class GameplayScript : PublicScripts
         playerData.score = score;
         playerData.coords = new float[] {coords[0], coords[1], coords[2]};
         playerData.checkpointTag = checkpointTag;
+        playerData.projectileName = ProjectileProcessor.GetProjectileName();
+        Debug.Log($"saved projectile: {playerData.projectileName}");
 
         //save part
         bf.Serialize(file, playerData);
@@ -96,6 +100,7 @@ public class GameplayScript : PublicScripts
             float[] c = playerData.coords;
             coords = new Vector3(c[0], c[1], c[2]);
             player.transform.position = coords;
+            ProjectileProcessor.SetProjectileName(playerData.projectileName);
 
             /*
             Sample Hierarchy of GameObject Tile
@@ -196,6 +201,7 @@ public class GameplayScript : PublicScripts
 class PlayerData{
     public int score;
     public float[] coords;
+    public string projectileName;
 
     //checkpoint data
     public string checkpointTag;

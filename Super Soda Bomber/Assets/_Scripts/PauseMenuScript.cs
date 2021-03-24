@@ -8,6 +8,7 @@ using UnityEngine.SceneManagement;
 PauseMenuScript
     Responsible for the controls on the pause prompt
 */
+/* HI*/
 public class PauseMenuScript : PublicScripts
 {
     GameObject confirmPrompt;

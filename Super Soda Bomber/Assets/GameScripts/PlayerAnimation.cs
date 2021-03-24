@@ -2,19 +2,26 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/*
+	Player Animation
+*/
+/// <summary>
+/// Manages the animation fo Fizzy and
+/// changes its state.
+/// </summary>
 public class PlayerAnimation : MonoBehaviour
 {
     //animation states
 	private Dictionary<string, string> ANIM = new Dictionary<string, string>(){
 		{"IDLE", "fizzy_idle"},
 		{"RUN", "fizzy_run"},
+		{"READY_JUMP", "fizzy_readyJump"},
 		{"JUMP", "fizzy_jump"},
 		{"FALL", "fizzy_fall"},
 		/*
 		{"D_JUMP", "fizzy_double_jump"},
 		{"LAND", "fizzy_land"},
 		{"THROW", "fizzy_throw"},
-		{"THROW_S", "fizzy_throw_shield"},
 		{"FIRE", "fizzy_fire_gun"},
 		{"DASH", "fizzy_dash"},
 		*/
@@ -34,6 +41,10 @@ public class PlayerAnimation : MonoBehaviour
         current = this;   
     }
 
+	/// <summary>
+	/// Changes Player's animation
+	/// </summary>
+	/// <param name="name">animation name (uppercase)</param>
 	public void ChangeAnimState(string name){
         name = name.ToUpper();
 		AnimatorStateInfo currentAnim = animator.GetCurrentAnimatorStateInfo(0);
@@ -42,12 +53,5 @@ public class PlayerAnimation : MonoBehaviour
 		if (currentAnim.IsName(ANIM[name])) return;
 		animator.Play(ANIM[name]);
 
-	}
-
-	public void FreezeFrame(){
-		animator.speed = 0;
-	}
-	public void UnfreezeFrame(){
-		animator.speed = 1;
 	}
 }
