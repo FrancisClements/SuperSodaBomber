@@ -272,7 +272,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   onSceneLoaded: {fileID: 11400000, guid: 9d96776bdd7a28548a36e525e38e0380, type: 2}
   slideTransition: {fileID: 1007778689}
-  startingScene: 3
+  startingScene: 4
 --- !u!4 &1041461258
 Transform:
   m_ObjectHideFlags: 0
