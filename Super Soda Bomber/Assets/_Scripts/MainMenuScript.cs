@@ -38,6 +38,9 @@ public class MainMenuScript : MonoBehaviour
     }
 
     public void StartLevel(){
+        savedMapIndex = LevelLoader.GetSavedScene();
+
+        Debug.Log($"[MAINMENU] Index: {savedMapIndex}");
         TransitionLoader.UseMainMenuEvents = true;
         GameManager.current.MoveScene(savedMapIndex, false);
         onLevelContinue?.Raise(savedMapIndex);

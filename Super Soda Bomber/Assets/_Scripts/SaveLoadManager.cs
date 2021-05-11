@@ -108,5 +108,6 @@ public class PlayerData{
 //map_data.soda
 [System.Serializable]
 public class MapData{
+    public int runs;
     public int mapLevel; 
 }

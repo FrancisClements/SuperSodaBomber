@@ -31,10 +31,13 @@ public class TransitionLoader : MonoBehaviour
         useMainMenuEvent = active;
     }
 
+    public void ResetIndex(){
+        index = 0;
+    }
+
     public void FillStart(){
         status = "fill_start";
         transition.Play("fill_start");
-        Debug.Log("start called");
     }
 
     public void FillEnd(){
@@ -54,6 +57,7 @@ public class TransitionLoader : MonoBehaviour
     public void CueStartDone(){
         Debug.Log("MainMenuUse: " + useMainMenuEvent);
         if (index < duringTransitionEvents.Count && useMainMenuEvent){
+            Debug.Log($"[START] Cued: {duringTransitionEvents[index].name}");
             duringTransitionEvents[index]?.Raise();
             FillEnd();
         }
@@ -65,6 +69,7 @@ public class TransitionLoader : MonoBehaviour
     public void CueEndDone(){
         if (useMainMenuEvent){
             if (index < afterTransitionEvents.Count){
+                Debug.Log($"[END] Cued: {afterTransitionEvents[index].name}");
                 afterTransitionEvents[index]?.Raise();
             }
             index++;
