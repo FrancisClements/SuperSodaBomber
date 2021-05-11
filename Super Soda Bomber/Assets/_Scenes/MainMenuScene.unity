@@ -1020,6 +1020,7 @@ GameObject:
   - component: {fileID: 1468524574}
   - component: {fileID: 1468524572}
   - component: {fileID: 1468524575}
+  - component: {fileID: 1468524573}
   m_Layer: 0
   m_Name: DebugMenu
   m_TagString: Untagged
@@ -1053,6 +1054,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6a8804e0acedffb4791b068a4c87a2c3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &1468524573
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1468524570}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 224041266f0a6e641a70e2dbda68d3c8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  continueButton: {fileID: 1557372189}
+  newButton: {fileID: 397102434}
+  onLevelNew: {fileID: 11400000, guid: da3fd2b2f31005a488f4145a6a31d261, type: 2}
+  onLevelContinue: {fileID: 11400000, guid: a83f6272d70eb1f43aafe95693faea82, type: 2}
 --- !u!114 &1468524574
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1078,10 +1095,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2cdf70b3249e6d74ea787a9f6e5c0e29, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  continueButton: {fileID: 1557372189}
-  newButton: {fileID: 397102434}
-  onLevelNew: {fileID: 0}
-  onLevelContinue: {fileID: 11400000, guid: a83f6272d70eb1f43aafe95693faea82, type: 2}
 --- !u!1 &1539917977
 GameObject:
   m_ObjectHideFlags: 0
@@ -1248,7 +1261,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1468524575}
+      - m_Target: {fileID: 1468524573}
         m_MethodName: StartLevel
         m_Mode: 1
         m_Arguments:

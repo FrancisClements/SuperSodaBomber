@@ -7,25 +7,25 @@ CheckpointScript
 
 public class CheckpointScript : PublicScripts
 {
-
+    [SerializeField] private Animator animator; //animator for the checkpoint
     private bool isTouched; //used to verify if the checkpoint has been already triggered
     private TextMesh notification;
-    private SpriteRenderer sRenderer; //used to render the sprite
-    private Sprite checkActiveImg; //image of the checkpoint
 
     void Awake(){
-        checkActiveImg = Resources.Load<Sprite>("Gameplay/check_active");
-        sRenderer = gameObject.GetComponent<SpriteRenderer>();
         notification = gameObject.GetComponentInChildren<TextMesh>();
         notification.gameObject.SetActive(false);
-
     }
 
     public void ChangeState(){
         //changes the sprite of the image if it's touched
-        sRenderer.sprite = checkActiveImg;
+        animator.SetTrigger("rise");
         isTouched = true;
-        
+    }
+
+    public void ForceWave(){
+        //forces the checkpoint flag to be already waving
+        animator.Play("check_wave");
+        isTouched = true;
     }
     
     void OnTriggerEnter2D(Collider2D col){

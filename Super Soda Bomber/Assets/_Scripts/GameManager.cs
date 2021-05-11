@@ -77,13 +77,11 @@ public class GameManager : MonoBehaviour
             incomingSceneIndex = SceneIndex.None;
         }
         else
-            Debug.Log("not unloading");
+            Debug.LogError("Scene is not unloading");
     }
 
     public void ActivateNewScene(){
-        Debug.Log("Loaded Index: " + loadedSceneIndex);
         if (loadedSceneIndex != SceneIndex.None){
-            Debug.Log("[manager] scene activated");
             loadedScene.allowSceneActivation = true;
             StartCoroutine(WaitUntilDone());
         }
@@ -110,7 +108,6 @@ public class GameManager : MonoBehaviour
 
         if (!loadedScene.allowSceneActivation){
             onSceneLoaded?.Raise();
-            Debug.Log("[manager] scene raised");
 
             if (activate)
                 ActivateNewScene();

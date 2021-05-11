@@ -27,8 +27,8 @@ public class OptionsMenuScript : MonoBehaviour
         musicSl.value = PlayerPrefs.GetFloat("MusicVol", 1);
         sfxSl.value = PlayerPrefs.GetFloat("SFXVol", 1);
         //automatically sets the value & image of the voice toggle
-        voiceEnable = PlayerPrefs.GetInt("Voice", 1);
-        if(voiceEnable == 1){voiceBtn.image.sprite = onImg;}
+        // voiceEnable = PlayerPrefs.GetInt("Voice", 1);
+        // if(voiceEnable == 1){voiceBtn.image.sprite = onImg;}
     }
 
     //setting the vars when slider changed

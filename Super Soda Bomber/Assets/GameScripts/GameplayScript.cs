@@ -146,7 +146,7 @@ public class GameplayScript : PublicScripts
                     //if name matches with checkpointTag, change the state
                     if (obj.name == checkpointTag){
                         CheckpointScript objScript = obj.GetComponent<CheckpointScript>();
-                        objScript.ChangeState();
+                        objScript.ForceWave();
                         break;
                     }
                 }
@@ -164,14 +164,14 @@ public class GameplayScript : PublicScripts
     public void GameOver(){
         //save the current score at PlayerPrefs
         PlayerPrefs.SetInt("CurrentScore", score);
-        _Move("GameOverScene");
+        _Move(SceneIndex.GameOver);
     }
 
     //when stage has been completed
     public void StageComplete(){
         //save the current score at PlayerPrefs
         PlayerPrefs.SetInt("CurrentScore", score);
-        _Move("StageCompleteScene");
+        _Move(SceneIndex.StageComplete);
 
     }
 

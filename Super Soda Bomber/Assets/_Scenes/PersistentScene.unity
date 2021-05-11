@@ -251,6 +251,8 @@ GameObject:
   - component: {fileID: 1041461261}
   - component: {fileID: 1041461260}
   - component: {fileID: 1041461259}
+  - component: {fileID: 1041461262}
+  - component: {fileID: 1041461263}
   m_Layer: 0
   m_Name: GameDebug
   m_TagString: Untagged
@@ -272,7 +274,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   onSceneLoaded: {fileID: 11400000, guid: 9d96776bdd7a28548a36e525e38e0380, type: 2}
   slideTransition: {fileID: 1007778689}
-  startingScene: 3
+  startingScene: 1
 --- !u!4 &1041461258
 Transform:
   m_ObjectHideFlags: 0
@@ -365,6 +367,45 @@ MonoBehaviour:
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 2
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &1041461262
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1041461256}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2cdf70b3249e6d74ea787a9f6e5c0e29, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1041461263
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1041461256}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c3cd00a62478544995dd2d10d60dbf9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gameEvent: {fileID: 11400000, guid: 888c89df3db4b4a478232e61f169f0ef, type: 2}
+  unityEventResponse:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1041461262}
+        m_MethodName: RestartLevel
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2

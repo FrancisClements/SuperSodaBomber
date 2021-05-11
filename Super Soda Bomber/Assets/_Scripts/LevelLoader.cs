@@ -1,18 +1,10 @@
 ﻿using UnityEngine;
-using SuperSodaBomber.Events;
-using UnityEngine.UI;
 
 public class LevelLoader : MonoBehaviour
 {
-    public GameObject continueButton;
-
-    public Button newButton;
-    [SerializeField] private VoidEvent onLevelNew;
-    [SerializeField] private SceneEvent onLevelContinue;
-
     private SaveLoadManager<MapData> saveLoad;
-    private MapData mapData;
-    private SceneIndex savedMapIndex;
+    private static MapData mapData;
+    private static SceneIndex savedMapIndex;
 
     // Start is called before the first frame update
     void Start()
@@ -20,32 +12,21 @@ public class LevelLoader : MonoBehaviour
         saveLoad = new SaveLoadManager<MapData>("map_data");
         mapData = saveLoad.LoadData();
 
-        Debug.Log(mapData == null);
-
-        ConfigureBtnBehaviour(mapData == null);
-
+        //fetches the saved level
         if (mapData != null)
-            //moves scene to title card
             savedMapIndex = (SceneIndex)(mapData.mapLevel + 2);
         else{
-            continueButton.SetActive(false);
             savedMapIndex = SceneIndex.Level1_Game;
         }
     }
 
-    void ConfigureBtnBehaviour(bool isNull){
-        if (isNull){
-            newButton.onClick.AddListener(StartLevel);
-        }
-        else{
-            newButton.onClick.AddListener(() => onLevelNew?.Raise());
-        }
+    public static SceneIndex GetSavedScene(){
+        if (mapData != null)
+            return savedMapIndex;
+        return SceneIndex.None;
     }
 
-    public void StartLevel(){
-        TransitionLoader.UseMainMenuEvents = true;
+    public void RestartLevel(){
         GameManager.current.MoveScene(savedMapIndex, false);
-        onLevelContinue?.Raise(savedMapIndex);
     }
-    
 }

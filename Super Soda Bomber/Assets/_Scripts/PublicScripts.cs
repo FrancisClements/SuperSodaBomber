@@ -102,6 +102,23 @@ public class PublicScripts : MonoBehaviour
             }
         }
     }
+
+    /// <summary>
+    /// Moves to selected scene
+    /// </summary>
+    public void _Move(SceneIndex sceneIndex){
+        if (sceneIndex != SceneIndex.None || sceneIndex != SceneIndex.Persistence){
+            try{
+                GameManager.current.MoveScene(sceneIndex, false);
+                onSceneMove?.Raise();
+            }
+            catch{
+                //prevents error in case the developer plays directly at the scene
+                //instead of playing it at the persistent scene
+                SceneManager.LoadScene((int)sceneIndex);
+            }
+        }
+    }
     
     /// <summary>
     /// Toggles on/off the selected prompt

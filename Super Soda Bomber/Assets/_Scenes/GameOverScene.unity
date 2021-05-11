@@ -279,6 +279,17 @@ MonoBehaviour:
           m_StringArgument: Level1_Game_Level
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 0}
+        m_MethodName: 
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &484902428
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -407,6 +418,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cd7364cf77e44e1499f772635d228c54, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  onLevelRestart: {fileID: 11400000, guid: 888c89df3db4b4a478232e61f169f0ef, type: 2}
   scoreText: {fileID: 2047032119}
 --- !u!1 &1425551432
 GameObject:
