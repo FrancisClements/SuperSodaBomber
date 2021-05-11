@@ -79,7 +79,8 @@ public class ProjectileManager : PublicScripts
     void OnTriggerEnter2D(Collider2D col){
         //detects whether if the projectile collides with the map or the enemy
         if ((layersToCollide.value & 1 << col.gameObject.layer) != 0 && 
-            (GetExplosionType() != ExplosionType.Delay)){
+            (GetExplosionType() != ExplosionType.Delay) && 
+            col.gameObject.tag != "WallDetector"){
             //if it collides, activate the particle effect and then destroy the Bomb projectile.
             ExplodeProjectile(col);
         }

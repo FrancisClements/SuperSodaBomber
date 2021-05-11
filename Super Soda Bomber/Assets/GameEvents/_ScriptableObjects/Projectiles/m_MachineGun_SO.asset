@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e74c9b4fdbcfefb459595a4c93f0e329, type: 3}
+  m_Name: m_MachineGun_SO
+  m_EditorClassIdentifier: 
+  projectileType: 6
+  throwX: 3
+  throwY: 0
+  spin: 0
+  gravity: 0
+  isExplosive: 0
+  explosionPrefab: {fileID: 0}
+  explosionAmount: 1
+  isSplashDamage: 0
+  blastRadius: 1
+  explosionType: 0
+  detonateTime: 2.5
+  applyMovingMechanic: 0
+  throwingMultiplier: 2.5

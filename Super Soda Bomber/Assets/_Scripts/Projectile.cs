@@ -145,7 +145,7 @@ public abstract class Projectile: PublicScripts{
 
             //if it's not a target, or the target just died, do nothing.
             if (targetScript == null)
-                return;
+                return;            
 
             //if target is an enemy
             if (targetName == "Enemy" || targetName == "EnemyBoss"){
@@ -392,3 +392,10 @@ public class Pellet: Projectile{
 */
 
 public class ShooterProjectile: Projectile{}
+
+public class MilcherMachineGun: Projectile{
+    protected override void ConfigVariables()
+    {
+        throwY += UnityEngine.Random.Range(-15f, 15f);
+    }
+}

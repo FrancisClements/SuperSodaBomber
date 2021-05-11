@@ -139,7 +139,7 @@ public enum PlayerAbilities
 
 public enum ProjectileTypes{
     Undefined, SodaBomb, Fizztol, Cannade, Shotgun,
-    Shooter, Milcher_Bullet,
+    Shooter, Milcher_MachineGun, Milcher_TankShell,
     smallCluster, pellet
 }
 
