@@ -143,11 +143,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 652d676bc4a62b94a8d4f3ec1e5787c9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  onSceneMove: {fileID: 0}
   scriptObject: {fileID: 11400000, guid: c9ce46326d81cc249a90baf15bf993bd, type: 2}
   rigid: {fileID: 6203182048443516712}
   layersToCollide:
     serializedVersion: 2
-    m_Bits: 2560
+    m_Bits: 18944
 --- !u!198 &198502249970297684
 ParticleSystem:
   m_ObjectHideFlags: 0

@@ -441,13 +441,13 @@ MonoBehaviour:
   m_MovementSmoothing: 0.15
   m_WhatIsGround:
     serializedVersion: 2
-    m_Bits: 2560
+    m_Bits: 18944
   m_GroundCheck: {fileID: 1274516751}
   floor: {fileID: 58024525}
   OnLandEvent:
     m_PersistentCalls:
       m_Calls: []
-  chosenAbility: 0
+  chosenAbility: 2
 --- !u!114 &89766935
 MonoBehaviour:
   m_ObjectHideFlags: 0

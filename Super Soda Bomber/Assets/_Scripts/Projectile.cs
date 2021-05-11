@@ -94,6 +94,12 @@ public abstract class Projectile: PublicScripts{
             targetLayers.Add("Enemy");
         }
 
+        //if the layers have the "bossenemy" checked,
+        if ((layers.value & 1 << LayerMask.NameToLayer("EnemyBoss")) != 0){
+            //add it to layers to damage
+            targetLayers.Add("EnemyBoss");
+        }
+
         //if it's player on the other hand,
         if ((layers.value & 1 << LayerMask.NameToLayer("Player")) != 0){
             targetLayers.Add("Player");
@@ -142,7 +148,7 @@ public abstract class Projectile: PublicScripts{
                 return;
 
             //if target is an enemy
-            if (targetName == "Enemy"){
+            if (targetName == "Enemy" || targetName == "EnemyBoss"){
 
                 //checks whether it has the key from PublicScripts.cs
                 if (projScores.ContainsKey(p_name)){
@@ -185,7 +191,7 @@ public abstract class Projectile: PublicScripts{
                         if (targetScript == null)
                             continue;
                         
-                        if (targetName == "Enemy")
+                        if (targetName == "Enemy" || targetName == "EnemyBoss")
                             targetScript.Damage(GetSplashDamage(Mathf.Abs(distance)));
                         else if (targetName == "Player")
                             targetScript.Damage();

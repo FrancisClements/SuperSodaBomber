@@ -33,7 +33,7 @@ namespace SuperSodaBomber.Enemies{
 
     //Enemy Types
     public enum EnemyType{
-        Shooter, Roller
+        Shooter, Roller, Milcher
     }
 
     //Phases

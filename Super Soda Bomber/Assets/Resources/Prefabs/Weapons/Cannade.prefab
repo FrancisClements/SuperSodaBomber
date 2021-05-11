@@ -81,7 +81,7 @@ SpriteRenderer:
   m_Size: {x: 2, y: 2}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!50 &6203182048443516712
@@ -117,11 +117,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 652d676bc4a62b94a8d4f3ec1e5787c9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  onSceneMove: {fileID: 0}
   scriptObject: {fileID: 11400000, guid: 3c1bda80b4cd56840889ad911d7c2d6e, type: 2}
   rigid: {fileID: 6203182048443516712}
   layersToCollide:
     serializedVersion: 2
-    m_Bits: 2560
+    m_Bits: 18944
 --- !u!198 &198502249970297684
 ParticleSystem:
   m_ObjectHideFlags: 0

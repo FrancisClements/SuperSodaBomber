@@ -83,7 +83,7 @@ public class PlayerHealth : MonoBehaviour, IDamageable
 
     //triggers when player touches an enemy
 	void OnCollisionStay2D(Collision2D col){
-		if (col.gameObject.layer == 11){
+		if (col.gameObject.layer == 11 || col.gameObject.layer == 14){
 			Damage();
 		}
 	}

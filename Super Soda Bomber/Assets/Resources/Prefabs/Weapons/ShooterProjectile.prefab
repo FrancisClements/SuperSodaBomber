@@ -122,6 +122,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 652d676bc4a62b94a8d4f3ec1e5787c9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  onSceneMove: {fileID: 0}
   scriptObject: {fileID: 11400000, guid: 299f5eaa5bf79c546861a247bf71301e, type: 2}
   rigid: {fileID: 8982440235276300915}
   layersToCollide:
