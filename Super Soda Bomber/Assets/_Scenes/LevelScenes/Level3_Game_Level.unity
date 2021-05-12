@@ -971,8 +971,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e72f0f81df55d4a42a06814b8065a882, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  hudButton: {fileID: 1327533901}
-  hudScore: {fileID: 1613053559}
+  hudButton: {fileID: 0}
+  hudScore: {fileID: 0}
   iconPrefab: {fileID: 1884748286880467951, guid: 59b0865baf0d66845aa8f7189f8b1cd1,
     type: 3}
   spriteList:
@@ -982,6 +982,12 @@ MonoBehaviour:
   - name: Dash
     isCooldown: 1
     icon: {fileID: 21300000, guid: 1a3bf2e1be5a12a47a982503f174c4ba, type: 3}
+  - name: Fizztol
+    isCooldown: 1
+    icon: {fileID: 21300000, guid: bf9ee15bb65ec3f4ebaf24eb833e4d9b, type: 3}
+  - name: Shotgun
+    isCooldown: 1
+    icon: {fileID: 21300000, guid: 197154d1a2a7ecf4c9aba5bbad763e35, type: 3}
 --- !u!1001 &193892837
 PrefabInstance:
   m_ObjectHideFlags: 0
