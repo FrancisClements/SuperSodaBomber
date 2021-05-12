@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 114456787287633670}
   - component: {fileID: 198502249970297684}
   - component: {fileID: 199592556095638514}
+  - component: {fileID: 95380284299716078}
   m_Layer: 12
   m_Name: SmallCluster
   m_TagString: Projectile
@@ -73,7 +74,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: 05a72bcd519474a4a97eae27f73f161e, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 45613113c2972aa4c8aea8afa653dc14, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -143,14 +144,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 652d676bc4a62b94a8d4f3ec1e5787c9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  savePath: 
-  type: 3
+  onSceneMove: {fileID: 0}
+  scriptObject: {fileID: 11400000, guid: 4562dd8e792327a46ba5b8ba5bf32f16, type: 2}
   rigid: {fileID: 6203182048443516712}
   layersToCollide:
     serializedVersion: 2
-    m_Bits: 2560
-  explosion: {fileID: 6199953446600296795, guid: bc5afa4f53c74dd4ea463d49229475cc,
-    type: 3}
+    m_Bits: 18944
 --- !u!198 &198502249970297684
 ParticleSystem:
   m_ObjectHideFlags: 0
@@ -4816,3 +4815,22 @@ ParticleSystemRenderer:
   m_Mesh2: {fileID: 0}
   m_Mesh3: {fileID: 0}
   m_MaskInteraction: 0
+--- !u!95 &95380284299716078
+Animator:
+  serializedVersion: 3
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6203182048443516713}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 02e6cc2d593503b4b99a445d5d33b70d, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorControllerStateOnDisable: 0

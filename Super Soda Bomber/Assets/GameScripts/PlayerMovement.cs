@@ -1,6 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
+using System.Collections.Generic;
 
 /*
 PlayerControl
@@ -14,10 +15,12 @@ public class PlayerMovement : PublicScripts
 	[Header("Variables")]
 	[Space]
 
-	[SerializeField] private float m_JumpForce = 400f;                          // Amount of force added when the player jumps.
+	public float m_JumpForce = 400f;                          // Amount of force added when the player jumps.
+	private float m_readyJumpSpeed = .15f;
 	[Range(0, .3f)] [SerializeField] private float m_MovementSmoothing = .75f;  // How much to smooth out the movement
 	[SerializeField] private LayerMask m_WhatIsGround;                          // A mask determining what is ground to the character
 	[SerializeField] private Transform m_GroundCheck;                           // A position marking where to check if the player is grounded.
+	[SerializeField] private Transform floor;									// A position where double jump particle spawns.
 
 	const float k_GroundedRadius = .15f; // Radius of the overlap circle to determine if grounded
 	const float gracePeriod = .5f; // Time when player can jump regardless of groundcheck
@@ -31,12 +34,12 @@ public class PlayerMovement : PublicScripts
 	private bool m_Grounded;            // Whether or not the player is grounded.
 	private bool m_hangJump = false;    // If player is eligible to perform a hangjump (Coyote Time)
 	private bool m_FacingRight = true;  // For determining which way the player is currently facing.
+	private bool m_doubleJump = true;
+
+	public static Vector3 playerPos { get; private set; }
 
 	//animator
 	private PlayerAnimation animator = PlayerAnimation.current;
-
-	//this will be used for solely on jump anticipation
-	public DetectButtonPress buttonDetector;
 
 	[Header("Events")]
 	[Space]
@@ -46,57 +49,41 @@ public class PlayerMovement : PublicScripts
 
 	//this will be used on abilities
 	public PlayerAbilities chosenAbility;
-	public AbilityEvent m_AbilityEvent;
+	private AbilityVerifier a_Verifier;
 
-	[System.Serializable]
-	public class AbilityEvent: UnityEvent<Rigidbody2D>{}			
+	public delegate void flipDelegate();
+
+    /// <summary>
+    /// Event when the player flips. (Dash)
+    /// </summary>
+    public event flipDelegate flipEvent;		
 
 	[System.Serializable]
 	public class BoolEvent : UnityEvent<bool> {}
 
 	void Awake()
 	{
+		//config variables
 		m_Rigidbody2D = GetComponent<Rigidbody2D>();
-		ConfigureAbility();
 
+		//config ability and the verifier
+		a_Verifier = gameObject.AddComponent<AbilityVerifier>();
+		AbilityProcessor.Fetch(chosenAbility, this);
 
 		if (OnLandEvent == null)
 			OnLandEvent = new UnityEvent();
 
-		if (m_AbilityEvent == null) {
-			m_AbilityEvent = new AbilityEvent();
-		}
-
 	}
 
-	void Start()
-    {
+	void Start(){
+		a_Verifier.Init(m_Rigidbody2D, chosenAbility);
+		GameplayScript.SetHpUI(health);
 	}
-
-	void ConfigureAbility()
-    {
-		ActiveAbility a;
-		Ability ability = AbilityProcessor.Fetch(chosenAbility);
-		Debug.Log($"ability: {ability.GetType()}");
-
-		if (typeof(ActiveAbility).IsAssignableFrom(ability.GetType())){
-			a = ability as ActiveAbility;
-			m_AbilityEvent.AddListener(a.CallAbility);
-			Debug.Log("the ability inherits ActiveAbility");
-        }
-		else if (typeof(PassiveAbility).IsAssignableFrom(ability.GetType())){
-			Debug.Log("the ability inherits Passive Ability");
-        }
-        else
-        {
-			Debug.Log("the ability does not inherit a particular ability");
-        }
-
-    }
-
 
 	void FixedUpdate()
 	{
+		//Updates the player tranform
+		playerPos = transform.position;
 		//Player Animation script
 		animator = PlayerAnimation.current;
 		bool wasGrounded = m_Grounded;
@@ -125,10 +112,16 @@ public class PlayerMovement : PublicScripts
                 hangTime = gracePeriod + Time.time;
 			}
 		}
+
+		a_Verifier.UpdateTransform(floor);
 	}
 
-	public void Move(float move, bool jump)
+	public void Move(float move, bool readyJump)
 	{
+		//if the player is ready to jump, decrease the speed
+		if (readyJump)
+			move *= m_readyJumpSpeed;
+
 		// Move the character by finding the target velocity
 		Vector3 targetVelocity = new Vector2(move * 10f, m_Rigidbody2D.velocity.y);
 		// And then smoothing it out and applying it to the character
@@ -140,7 +133,9 @@ public class PlayerMovement : PublicScripts
 			// ... flip the player.
 			Flip();
 		}
+	}
 
+	public void Jump(bool jump){
 		// If the player should jump...
 		if ((m_Grounded||m_hangJump) && jump)
 		{
@@ -150,29 +145,46 @@ public class PlayerMovement : PublicScripts
             m_hangJump = false;
 			hangTime = Time.time;
 
-			// Add score
-			GameplayScript.current.AddScore(scores["jump"]);
+			//prevents user from double jumping indefinely midair
+			m_doubleJump = true;
 		}
-		ManageAnim(move);
+
+		//verifier for double jump
+		else if (m_doubleJump && jump)
+        {
+			a_Verifier.Verify(m_Grounded, jump);
+			m_doubleJump = false;
+        }
 	}
 
-	private void ManageAnim(float move){
-		if (buttonDetector.getPressedStatus() && m_Grounded){
+	public void DoubleTap(bool _doubleTap){
+		a_Verifier.Verify(_doubleTap);
+	}
+
+	public void ManageAnim(float move, bool readyJump){
+		if (readyJump && m_Grounded){
 			animator.ChangeAnimState("READY_JUMP");
 			return;
 		}
-
-		if (m_Rigidbody2D.velocity.y > 0 && !m_Grounded){
+		
+		if (!m_Grounded){
+			if (m_Rigidbody2D.velocity.y > 0){
 			animator.ChangeAnimState("JUMP");
+			}
+			else if(m_Rigidbody2D.velocity.y < 0){
+				animator.ChangeAnimState("FALL");
+			}
 		}
-		else if(m_Rigidbody2D.velocity.y < 0 && !m_Grounded){
-			animator.ChangeAnimState("FALL");
-		}
-		else if (move != 0 && m_Grounded){
-			animator.ChangeAnimState("RUN");
-		}
-		else if (m_Grounded){
-			animator.ChangeAnimState("IDLE");
+		else {
+			if ((Mathf.Abs(move) == PlayerControl.GetRunSpeed())){
+				animator.ChangeAnimState("RUN");
+			}
+			else if (move != 0){
+				animator.ChangeAnimState("WALK");
+			}
+			else{
+				animator.ChangeAnimState("IDLE");
+			}
 		}
 	}
 
@@ -181,23 +193,91 @@ public class PlayerMovement : PublicScripts
 		// Switch the way the player is labelled as facing.
 		m_FacingRight = !m_FacingRight;
 		transform.Rotate(0f,180f,0);
+		a_Verifier.SetFlip(m_FacingRight);
+
+		//calls the flip event
+		flipEvent?.Invoke();
+	}
+}
+
+/// <summary>
+/// Verifies the use of active abilities on runtime.
+/// </summary>
+public class AbilityVerifier: PublicScripts{
+	private PlayerAbilities chosenAbility;
+	private Dictionary<PlayerAbilities, GameObject> fxDict = new Dictionary<PlayerAbilities, GameObject>();
+	private Rigidbody2D rigid;
+	private bool ready = true;
+	private Transform floorSource;
+	private bool isFacingRight = true;
+
+	//asynchronous work
+	private Coroutine coro;
+
+	public void Init(Rigidbody2D r, PlayerAbilities a){
+		chosenAbility = a;
+		rigid = r;
+
+		//add the fx to dictionary if it has one
+		if (chosenAbility.HasFlag(PlayerAbilities.DoubleJump)){
+			var fx = Resources.Load("Prefabs/Particles/DoubleJumpParticle") as GameObject;
+			fxDict.Add(PlayerAbilities.DoubleJump, fx);
+		}
+		if (chosenAbility.HasFlag(PlayerAbilities.Dash)){
+			var fx = Resources.Load("Prefabs/Particles/DashParticle") as GameObject;
+			fxDict.Add(PlayerAbilities.Dash, fx);
+		}
 	}
 
-	// triggers when player touches the checkpoint
-    private void OnTriggerEnter2D(Collider2D col){
-		if (col.gameObject.layer == 10){
-			//gets SpriteRenderer and changes the image
-			checkScript = col.GetComponent<CheckpointScript>();
+	public void UpdateTransform(Transform floor){
+		floorSource = floor;
+	}
 
-			//activate these scripts if the checkpoint was not saved yet
-			if(!checkScript.isTouched){
-				checkScript.ChangeState();
-				GameplayScript.current.AddScore(scores["checkpoint"]);
-				GameplayScript.current.SetCheckpoint(col.transform.position, col.name);
-				StartCoroutine(checkScript.Notify());
-				Debug.Log("Checkpoint Saved!");
-			}
+	public void SetFlip(bool right){
+		isFacingRight = right;
+	}
+	
+	//Only one of these Verify() works because of the chosen ability
+	
+	/// <summary>
+    /// Ability Verifier for Dash
+    /// </summary>
+    public void Verify(bool doubleTap){
+        if (chosenAbility.HasFlag(PlayerAbilities.Dash) && 
+			doubleTap && ready){
+				InvokeAbility(PlayerAbilities.Dash);
+				var particle = Instantiate(fxDict[PlayerAbilities.Dash], PlayerMovement.playerPos, Quaternion.identity, transform);
+				if(!isFacingRight){
+					particle.transform.localScale = new Vector3(-1f, 1f, 1f);
+				}
+		}
+            
+    }
+
+    /// <summary>
+    /// Ability Verifier for Double Jump
+    /// </summary>
+    public void Verify(bool grounded, bool jumped){
+        if (chosenAbility.HasFlag(PlayerAbilities.DoubleJump) &&
+			!grounded && jumped){
+				InvokeAbility(PlayerAbilities.DoubleJump);
+				Instantiate(fxDict[PlayerAbilities.DoubleJump], floorSource.position, Quaternion.identity);
 		}
     }
 
+	private void InvokeAbility(PlayerAbilities ability){
+		//add score
+		GameplayScript.current.AddScore(scores["ability"]);
+
+		float cooldown = AbilityProcessor.GetCooldown(ability);
+		AbilityProcessor.CallEvent(ability, rigid);
+		coro = StartCoroutine(AbilityCooldown(cooldown));
+
+	}
+
+	private IEnumerator AbilityCooldown(float secs){
+		ready = false;
+		yield return new WaitForSeconds(secs);
+		ready = true;
+	}
 }

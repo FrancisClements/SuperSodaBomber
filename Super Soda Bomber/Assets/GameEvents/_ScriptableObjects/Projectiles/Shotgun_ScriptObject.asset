@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e74c9b4fdbcfefb459595a4c93f0e329, type: 3}
+  m_Name: Shotgun_ScriptObject
+  m_EditorClassIdentifier: 
+  projectileType: 4
+  throwX: 3
+  throwY: 250
+  spin: 200
+  gravity: 1
+  isExplosive: 1
+  explosionPrefab: {fileID: 6203182048443516713, guid: 3432e3250b662a644a937cc05e5fb8ed,
+    type: 3}
+  explosionAmount: 8
+  isSplashDamage: 0
+  blastRadius: 0
+  explosionType: 3
+  detonateTime: 2.5
+  applyMovingMechanic: 1
+  throwingMultiplier: 2.5

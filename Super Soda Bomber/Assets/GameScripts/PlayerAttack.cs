@@ -1,26 +1,9 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 /*
 PlayerAttack
     Used to trigger the attacking of the player
     and how the weapon fires
-
-    Things are needed to improve:
-        The script is hard-coded. It only provides attack
-        to a fixed projectile with a fixed component/perk.
-
-        This script/other scripts are needed to be flexible
-        for projectiles/weapons with different perk and
-        property.
-
-        Components that are needed to be flexible with:
-            Chosen Bomb/Weapon
-            Perk
-            Explosion (OK)
-
-            Different behaviours caused by a perk (i.e. cluster bomb) (OK)
 */
 
 public class PlayerAttack : PublicScripts
@@ -29,21 +12,23 @@ public class PlayerAttack : PublicScripts
     public Transform attackSource;
     public Transform attackHandSource;
 
-    //weapon prefab (fix this to make it more flexible)
-    private GameObject projectilePrefab;
-    public string projectileName;
-    private bool isPrefabConfig;
+    //projectile properties
+    private GameObject projectilePrefab;        //projectile gameobject
+    public PlayerProjectiles chosenProjectile;  //chosen projectile (enum)
+    private string projectileName;              //name of the projectile
+    private bool isPrefabLoaded;                //state if the prefab is loaded
 
     //firing properties
-    private float fireRate;
-    private float attackTime;
+    private float fireRate;                             //lower = faster
+    public float rateMultiplier { get; private set; }   //modifies firerate non-destructively
+    private float attackTime;                           //time when attack can be activated again
 
-    private GameObject projectile;
-    private ProjectileManager projectileScript;
-    private bool isCreated;             //only applies to detonation projectiles. otherwise, it will stay false
-    private explosionType explodeType;  //explosion type of the projectile. Located at PublicScripts.cs
+    private GameObject projectile;              //cloned projectile prefab
+    private ProjectileManager projectileScript; //projectile script
+    private bool isCreated;                     //only applies to detonation projectiles. otherwise, it will stay false
+    private ExplosionType explodeType;          //explosion type of the projectile. Located at PublicScripts.cs
 
-    //asynchronous work
+    //asynchronous work (used on detonation-type projectiles)
     private Coroutine coro;
 
     // Start is called before the first frame update
@@ -51,21 +36,55 @@ public class PlayerAttack : PublicScripts
     {
         ProjectileProcessor.Init();
         isCreated = false;
-        isPrefabConfig = false;
+        isPrefabLoaded = false;
         attackTime = 0;
+        rateMultiplier = 1f;
     }
 
-    public void Attack(bool isMoving, bool attack){
-        //creates a projectile clone
-		if (attack && (attackTime <= Time.time && !isCreated)){
+    /// <summary>
+    /// Updates the Attack Rate Multiplier.
+    /// </summary>
+    /// <param name="newValue">New Multiplier Value</param>
+    public void SetAttackRateMultiplier(float newValue){
+        rateMultiplier = newValue;
+    }
 
-            if (!isPrefabConfig){
-                projectilePrefab = ProjectileProcessor.GetPrefab(projectileName);
-                isPrefabConfig = true;
+    /// <summary>
+    /// Makes the player attack.
+    /// </summary>
+    /// <param name="isMoving">Player's movement state</param>
+    /// <param name="attack">Player's attacking state</param>
+    public void Attack(bool isMoving, bool attack){
+
+        //if the following conditions apply:
+            //didnt attack,
+            //currently on firerate cooldown,
+            //projectile has spawned already (detonation-type only)
+        //do nothing
+
+		if (attack && (attackTime <= Time.time && !isCreated)){
+            //use the attack animation
+            switch(chosenProjectile){
+                case PlayerProjectiles.Fizztol:
+                    PlayerAnimation.current.ChangeAnimState("FIRE_FIZZTOL");
+                    break;
+                case PlayerProjectiles.Shotgun:
+                    PlayerAnimation.current.ChangeAnimState("FIRE_SHOTGUN");
+                    break;
+                default:
+                    PlayerAnimation.current.ChangeAnimState("THROW");
+                    break;
             }
 
-            //set the shotgun location to attackhandsource
-                if (projectileName == "shotgun")
+            //load the projectile
+            if (!isPrefabLoaded){
+                projectilePrefab = ProjectileProcessor.GetPrefab(chosenProjectile);
+                projectileName = ProjectileProcessor.GetProjectileName();
+                isPrefabLoaded = true;
+            }
+
+            //set the shotgun location to attackhandsource and spawn one
+                if (projectileName == "Shotgun" || projectileName == "Fizztol")
                     projectile = Instantiate(projectilePrefab, attackHandSource.position, 
                     attackHandSource.rotation);
                 else
@@ -75,18 +94,16 @@ public class PlayerAttack : PublicScripts
             //creates the projectile
             projectileScript = projectile.GetComponent<ProjectileManager>();
 
-            //updates and fetches projectile's data
+            //updates and fetches projectile data
             projectileScript.SetPlayerMoving(isMoving);
-            fireRate = fireRates[projectileScript.GetName()];
+            fireRate = fireRates[projectileScript.GetName()]/rateMultiplier;
             explodeType = projectileScript.GetExplosionType();
 
-            //adds the score and updates the attack time
-            GameplayScript.current.AddScore(scores["fire"]);
+            //updates the attack time
             attackTime = fireRate + Time.time;
 
             //start waiting if it's a detonation projectile
-            if (explodeType == explosionType.Detonate){
-                Debug.Log("set isCreated to true");
+            if (explodeType == ExplosionType.Detonate){
                 coro = projectileScript.coro;
                 isCreated = true;
             }
@@ -94,8 +111,6 @@ public class PlayerAttack : PublicScripts
 
         //detonate the projectile using the button
         else if (attack && projectileScript != null && isCreated){
-            Debug.Log("Detonated");
-
             StopCoroutine(coro);
             projectileScript.DetonateProjectile();
             isCreated = false;

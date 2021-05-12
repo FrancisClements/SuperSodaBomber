@@ -1,8 +1,5 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.SceneManagement;
 
 /*
 ConfirmPromptScript
@@ -40,7 +37,7 @@ public class ConfirmPromptScript : PublicScripts
             _TogglePrompt(prompt);
         }
         else{
-            Debug.Log("LoadConfirmPrompt has nothing to load!");
+            Debug.LogError("LoadConfirmPrompt has nothing to load!");
         }
     }
 
@@ -50,7 +47,7 @@ public class ConfirmPromptScript : PublicScripts
             gameplayScript.Restart();
         }
         else{
-            Debug.Log("gameplayScirpt is notconfigured!");
+            Debug.LogError("gameplayScript is not configured!");
         }
         
     }

@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Enemy
   - Projectile
+  - WallDetector
   layers:
   - Default
   - TransparentFX
@@ -20,8 +21,8 @@ TagManager:
   - Checkpoint
   - Enemy
   - Projectile
-  - 
-  - 
+  - Phantom
+  - EnemyBoss
   - 
   - 
   - 
@@ -46,6 +47,12 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: Powerup
+    uniqueID: 4225304573
+    locked: 0
   - name: Player
     uniqueID: 2400605805
+    locked: 0
+  - name: Phantom
+    uniqueID: 1038316459
     locked: 0

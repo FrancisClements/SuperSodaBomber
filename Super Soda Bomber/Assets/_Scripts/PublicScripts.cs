@@ -1,8 +1,7 @@
-﻿using System.Collections;
+﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
+using SuperSodaBomber.Events;
 using UnityEngine.SceneManagement;
 
 /*
@@ -15,11 +14,12 @@ PublicScripts
 
 public class PublicScripts : MonoBehaviour
 {
+    [SerializeField] private VoidEvent onSceneMove;
+
     //list of non-projectile scores
     protected readonly Dictionary<string, int> scores = new Dictionary<string, int>(){
-        {"jump", 10},
         {"checkpoint", 125},
-        {"fire", 10}
+        {"ability", 10}
     };
 
     /*list of projectile scores
@@ -30,13 +30,14 @@ public class PublicScripts : MonoBehaviour
             you can find the name of the projectile at Projectile.cs, p_name
     */
     protected readonly Dictionary<string, int> projScores = new Dictionary<string, int>(){
-        {"sodaBomb_s", 15},
-        {"sodaBomb_m", 30},
-        {"sodaBomb_l", 75},
-        {"smallCluster_s", 15},
-        {"smallCluster_m", 30},
-        {"smallCluster_l", 75},
-        {"shotgun", 5}
+        {"SodaBomb_s", 15},
+        {"SodaBomb_m", 30},
+        {"SodaBomb_l", 75},
+        {"SmallCluster_s", 15},
+        {"SmallCluster_m", 30},
+        {"SmallCluster_l", 75},
+        {"Pellet", 5},
+        {"Fizztol", 15}
     };
 
     //description constants
@@ -49,10 +50,10 @@ public class PublicScripts : MonoBehaviour
 
     //firing rates of the weapons (shows cooldown in secs)
     protected readonly Dictionary <string, float> fireRates = new Dictionary <string, float>(){
-        {"sodaBomb", .6f},
-        {"fizztol", .4f},
-        {"cannade", 1.2f},
-        {"shotgun", .8f}
+        {"SodaBomb", .6f},
+        {"Fizztol", .3f},
+        {"Cannade", 1.2f},
+        {"Shotgun", .8f}
 
     };
 
@@ -62,61 +63,124 @@ public class PublicScripts : MonoBehaviour
             otherwise, add the name as is
     */
     protected readonly Dictionary <string, float> projDamage = new Dictionary<string, float>(){
-        {"sodaBomb_max", 50f},
-        {"sodaBomb_min", 20f},
-        {"smallCluster_max", 30f},
-        {"smallCluster_min", 10f},
-        {"shotgun", 15f}
-
+        {"SodaBomb_max", 60f},
+        {"SodaBomb_min", 20f},
+        {"SmallCluster_max", 45f},
+        {"SmallCluster_min", 10f},
+        {"Fizztol", 30f},
+        {"Pellet", 15f}
     };
 
-    //explosion types
-    /// <summary>
-    /// Explosion Type of the Projectile
-    /// </summary>
-    public enum explosionType{
-        Contact = 0,        //collision triggers explosion (default)
-        Detonate,           //player or time triggers explosion
-        Delay,              //time triggers explosion
-        Instant             //instantly explodes
-    }
-
-    [HideInInspector]
-    public string savePath;
-    
-    //used for save/load processes
-    public BinaryFormatter bf = new BinaryFormatter();
+    private readonly Dictionary <string, SceneIndex> sceneNames = new Dictionary<string, SceneIndex>(){
+        {"PersistentScene", SceneIndex.Persistence},
+        {"MainMenuScene", SceneIndex.MainMenu},
+        {"Options", SceneIndex.Options},
+        {"Level1_Game_Level", SceneIndex.Level1_Game},
+        {"Level2_Game_Level", SceneIndex.Level2_Game},
+        {"Level3_Game_Level", SceneIndex.Level3_Game},
+        {"Level4_Game_Level", SceneIndex.Level4_Game},
+        {"StageCompleteScene", SceneIndex.StageComplete},
+        {"PerkChoosingScene", SceneIndex.PerkChoose},
+        {"GameOverScene", SceneIndex.GameOver}
+    };
 
     /// <summary>
     /// Moves to selected scene
     /// </summary>
+    ///
+
     public void _Move(string scene){
-        SceneManager.LoadScene(sceneName: scene);
+        if (sceneNames.ContainsKey(scene)){
+            try{
+                GameManager.current.MoveScene(sceneNames[scene], false);
+                onSceneMove?.Raise();
+            }
+            catch{
+                //prevents error in case the developer plays directly at the scene
+                //instead of playing it at the persistent scene
+                SceneManager.LoadScene(scene);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Moves to selected scene
+    /// </summary>
+    public void _Move(SceneIndex sceneIndex){
+        if (sceneIndex != SceneIndex.None || sceneIndex != SceneIndex.Persistence){
+            try{
+                GameManager.current.MoveScene(sceneIndex, false);
+                onSceneMove?.Raise();
+            }
+            catch{
+                //prevents error in case the developer plays directly at the scene
+                //instead of playing it at the persistent scene
+                SceneManager.LoadScene((int)sceneIndex);
+            }
+        }
     }
     
     /// <summary>
     /// Toggles on/off the selected prompt
     /// </summary>
     public void _TogglePrompt(GameObject prompt){
+        
         bool status = prompt.activeInHierarchy;
         prompt.SetActive(!status);
-    }
-
-    /// <summary>
-    /// Deletes saved data
-    /// </summary>
-    public void ClearData(){
-        File.Delete(savePath);
-    }
-
-    //path dir
-    void Awake(){
-        savePath = Application.persistentDataPath + "saved_data.soda";
     }
 }
 
 //this will be used on abilities
+[Flags]
 public enum PlayerAbilities
 {
-    None, LongJump, DoubleJump, Dash
+    None, LongJump, DoubleJump, Dash = 4
+}
+
+public enum ProjectileTypes{
+    Undefined, SodaBomb, Fizztol, Cannade, Shotgun,
+    Shooter, Milcher_MachineGun, Milcher_TankShell,
+    smallCluster, pellet
+}
+
+public enum PlayerProjectiles{
+    Undefined, SodaBomb, Fizztol, Cannade, Shotgun
+}
+
+public enum MapName{
+    Test = -1, 
+    None = 0, 
+    Level1 = 1, 
+    Level2 = 2, 
+    Level3 = 3, 
+    Level4 = 4
+}
+
+public enum SceneIndex{
+    None = -1,
+    Persistence,
+    MainMenu,
+    Options,
+    Level1_Game,
+    Level2_Game,
+    Level3_Game,
+    Level4_Game,
+    StageComplete,
+    PerkChoose,
+    GameOver,
+}
+
+//explosion types
+/// <summary>
+/// Explosion Type of the Projectile
+/// </summary>
+    public enum ExplosionType{
+        Contact = 0,        //collision triggers explosion (default)
+        Detonate,           //player or time triggers explosion
+        Delay,              //time triggers explosion
+        Instant             //instantly explodes
+    }
+
+public interface IDamageable{
+    void Damage(float hp = 1);
 }

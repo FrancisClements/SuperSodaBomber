@@ -1,8 +1,6 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.SceneManagement;
+using SuperSodaBomber.Events;
 
 /*
 GameOverScript
@@ -12,10 +10,15 @@ GameOverScript
 
 public class GameOverScript : MonoBehaviour
 {
+    [SerializeField] private VoidEvent onLevelRestart;
     public Text scoreText;
 
     void Start(){
         scoreText.text = "Score: " + PlayerPrefs.GetInt("CurrentScore", 0).ToString();
+    }
+
+    public void RestartLevel(){
+        onLevelRestart?.Raise();
     }
 
 }

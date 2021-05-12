@@ -1,8 +1,6 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.SceneManagement;
+using SuperSodaBomber.Events;
 
 /*
 StageCompleteScript
@@ -13,6 +11,7 @@ StageCompleteScript
 public class StageCompleteScript : MonoBehaviour
 {
     public Text scoreText;
+    [SerializeField] private SceneEvent onLevelContinue;
 
     void Start(){
         scoreText.text = "Score: " + PlayerPrefs.GetInt("CurrentScore", 0).ToString();
@@ -20,6 +19,15 @@ public class StageCompleteScript : MonoBehaviour
 
     void PerkChoose(){
         
+    }
+
+    public void ContinueLevel(){
+        SceneIndex savedMapIndex = LevelLoader.GetSavedScene();
+
+        Debug.Log($"[STAGECOMPLETE] Index: {savedMapIndex}");
+        TransitionLoader.UseMainMenuEvents = true;
+        GameManager.current.MoveScene(savedMapIndex, false);
+        onLevelContinue?.Raise(savedMapIndex);
     }
 
 }

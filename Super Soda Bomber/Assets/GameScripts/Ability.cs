@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Events;
 
 /*
@@ -13,17 +11,29 @@ using UnityEngine.Events;
                 Long Jump
 */
 
-public class Ability: MonoBehaviour { }
-
+/// <summary>
+/// Empty Base Class Ability.
+/// </summary>
+public class Ability
+{
+    /// <summary>
+    /// Initializes the ability
+    /// </summary>
+    public virtual void Init(UnityEvent<Rigidbody2D> e) {}
+}
+/// 
 /// <summary>
 /// Abilities that require player's action in order to activate it.
 /// </summary>
 public abstract class ActiveAbility : Ability
 {
+    public float cooldown { get; protected set; }
+
     /// <summary>
-    /// Initializes the ability
+    /// Initializes the ability's UnityEvent.
     /// </summary>
-    public virtual void Init(UnityEvent<Rigidbody2D> e)
+    /// <param name="e"></param>
+    public override void Init(UnityEvent<Rigidbody2D> e)
     {
         e.AddListener(CallAbility);
     }
@@ -32,16 +42,16 @@ public abstract class ActiveAbility : Ability
     /// Calls the ability and applies it to the player
     /// </summary>
     /// <param name="rigid">RigidBody of the player</param>
-    public virtual void CallAbility(Rigidbody2D rigid) { }
+    public abstract void CallAbility(Rigidbody2D rigid);
+    public virtual void OnFlip(){}
 }
-
 
 /// <summary>
 /// Abilities that enhances one of the player's abilities permanently.
 /// </summary>
 public abstract class PassiveAbility: Ability
 {
-    /// <summary>Multiplier of the ability/variable</summary>
+    //Multiplier of the ability/variable
     protected float multiplier = 2f;
 
     /// <summary>Updates the value which is implemented by the passive ability.
@@ -54,41 +64,6 @@ public abstract class PassiveAbility: Ability
     }
 }
 
-
-/// <summary>
-/// Abilities that enhances one of the player's abilities temporarily.
-/// </summary>
-public abstract class Powerup: PassiveAbility
-{
-    /// <summary>Time until the ability/effect rans out</summary>
-    protected float abilityDuration;
-    protected float oldValue;
-
-    /// <summary>Updates the value which is implemented by the passive ability.
-    /// </summary>
-    /// <param name="oldValue">variable being implemented</param>
-    /// <returns>Updated value</returns>
-    public override float ApplyPassiveAbility(float oldValue)
-    {
-        this.oldValue = oldValue;
-        return base.ApplyPassiveAbility(oldValue);
-    }
-
-    /// <summary>Reverts the current value, removing the ability effect.</summary>
-    public virtual float UnapplyPassiveAbility()
-    {
-        return oldValue;
-    }
-
-    /// <summary>Waits for duration and then unapply the ability.</summary>
-    public virtual IEnumerator WaitAbilityEffect()
-    {
-        yield return new WaitForSeconds(abilityDuration);
-        UnapplyPassiveAbility();
-    }
-}
-
-
 //ABILITY TYPES (ACTIVE)
 
 /*
@@ -99,8 +74,9 @@ public abstract class Powerup: PassiveAbility
 
 public class DoubleJump : ActiveAbility
 {
-    private float jumpForce = 400f;
+    private float jumpForce = 300f;
     private float jumpMultiplier = 1.25f;
+
     public override void CallAbility(Rigidbody2D rigid)
     {
         rigid.AddForce(new Vector2(0f, jumpForce * jumpMultiplier));
@@ -109,16 +85,39 @@ public class DoubleJump : ActiveAbility
 
 /*
     Dash
-        Lets the player move quickly by pressing
-        attack button twice
+        Lets the player move quickly by tapping the
+        joystick twice
 */
 
 public class Dash : ActiveAbility
 {
     private float dashForce = 15f;
+    public GameObject fx = Resources.Load("Prefabs/Particles/DashParticle") as GameObject;
+
+    public Dash(){
+        cooldown = 3f;
+    }
+
+    public override void Init(UnityEvent<Rigidbody2D> e)
+    {
+        base.Init(e);
+        e.AddListener((rb2d) => CallCooldownUI());
+    }
+    
     public override void CallAbility(Rigidbody2D rigid)
     {
         rigid.velocity += new Vector2(dashForce, 0);
+    }
+
+    private void CallCooldownUI(){
+        //calls the UI
+        UICooldownDebug.current.CallCooldownUI(
+            name: this.GetType().FullName,
+            location: "button", duration: cooldown);
+    }
+
+    public override void OnFlip(){
+        dashForce *= -1;
     }
 }
 
@@ -132,7 +131,7 @@ public class Dash : ActiveAbility
 
 public class LongJump : PassiveAbility
 {
-    void Awake(){
-        multiplier = 1.5f;
-    }
+   public LongJump(){
+       multiplier = 1.25f;
+   }
 }

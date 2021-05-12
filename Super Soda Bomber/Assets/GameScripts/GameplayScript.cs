@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
@@ -19,8 +18,6 @@ GameplayScript
 
 public class GameplayScript : PublicScripts
 {
-    // Script for TestGameplay
-
     /*
     Processes:
     When user touches the checkpoint:
@@ -34,21 +31,34 @@ public class GameplayScript : PublicScripts
     */
     
     //Config Variables
-    public GameObject scoreTxtObject, player, tileObject, pausePrompt;
+    [SerializeField] private GameObject scoreTxtObject, hpTxtObject, player, tileObject, pausePrompt;
+
+    private Text scoreTxt, hpTxt;
+    private static int health;
 
     //Variables to Save
     private int score = 0;
     private Vector3 coords;
     private string checkpointTag;
+    public MapName mapName;
 
     private bool isPaused = false;
 
-    //Removes the script dependency using a self-static variable.
+    //Removes the object dependency using a self-static variable.
     public static GameplayScript current;
+    private SaveLoadManager<PlayerData> saveLoadPlayer;
+    private SaveLoadManager<MapData> saveLoadMap;
+
+    void Awake(){
+        saveLoadPlayer = new SaveLoadManager<PlayerData>();
+        saveLoadMap = new SaveLoadManager<MapData>("map_data");
+    }
 
     void Start(){
         Load();
         current = this;
+        scoreTxt = scoreTxtObject.GetComponent<Text>();
+        hpTxt = hpTxtObject.GetComponent<Text>();
     }
 
     /// <summary>
@@ -60,6 +70,11 @@ public class GameplayScript : PublicScripts
             score += amount;
     }
 
+    /// <summary>
+    /// Sets and saves the checkpoint data.
+    /// </summary>
+    /// <param name="checkpointCoords">Checkpoint position</param>
+    /// <param name="name">Name of the checkpoint</param>
     public void SetCheckpoint(Vector3 checkpointCoords, string name){
         coords = checkpointCoords;
         checkpointTag = name;
@@ -71,80 +86,92 @@ public class GameplayScript : PublicScripts
         coords += new Vector3(0, .5f, 0);
 
         //I/O
-        FileStream file = File.Create(savePath);
         PlayerData playerData = new PlayerData();
         playerData.score = score;
         playerData.coords = new float[] {coords[0], coords[1], coords[2]};
         playerData.checkpointTag = checkpointTag;
-        playerData.projectileName = ProjectileProcessor.GetProjectileName();
-        Debug.Log($"saved projectile: {playerData.projectileName}");
+        playerData.projectileType = (int) ProjectileProcessor.projectileType;
+        playerData.map = (int) mapName;
+        playerData.abilityType = (int) AbilityProcessor.abilities;
+        Debug.Log($"saved projectile: {ProjectileProcessor.projectileType}");
+
+        MapData mapData = new MapData();
+        mapData.mapLevel = (int) mapName;
 
         //save part
-        bf.Serialize(file, playerData);
-        file.Close();
+        saveLoadPlayer.SaveData(playerData);
+        saveLoadMap.SaveData(mapData);
     }
 
     //load game
     public void Load(){
-        if (File.Exists(savePath)){
-            //I/O
-            FileStream file = File.Open(savePath, FileMode.Open);
+        PlayerData playerData = saveLoadPlayer.LoadData();
+        if (playerData != null){
+            MapName savedMap = (MapName) playerData.map;
 
-            //load part
-            PlayerData playerData = (PlayerData)bf.Deserialize(file);
-            file.Close();
+            //don't load if the data is for a different map
+            if (savedMap == 0 || savedMap.Equals(mapName)){
+                score = playerData.score;
+                PlayerPrefs.SetInt("CurrentScore", score);
 
-            score = playerData.score;
-            PlayerPrefs.SetInt("CurrentScore", score);
+                float[] c = playerData.coords;
+                coords = new Vector3(c[0], c[1], c[2]);
+                player.transform.position = coords;
+                
+                var playerMove = player.GetComponent<PlayerMovement>();
+                AbilityProcessor.Fetch((PlayerAbilities) playerData.abilityType, playerMove);
 
-            float[] c = playerData.coords;
-            coords = new Vector3(c[0], c[1], c[2]);
-            player.transform.position = coords;
-            ProjectileProcessor.SetProjectileName(playerData.projectileName);
+                ProjectileProcessor.SetProjectileName((PlayerProjectiles) playerData.projectileType);
 
-            /*
-            Sample Hierarchy of GameObject Tile
-            to change the checkpoint image
-                Tile
-                    -> Obstacles
-                    -> Checkpoint1
-                        -> CheckpointScript
+                /*
+                Sample Hierarchy of GameObject Tile
+                to change the checkpoint image
+                    Tile
+                        -> Obstacles
+                        -> Checkpoint1
+                            -> CheckpointScript
 
-            Process:
-                - Find the child gameobject using the name
-                - Call the ChangeState() of the child script
-            */
+                Process:
+                    - Find the child gameobject using the name
+                    - Call the ChangeState() of the child script
+                */
 
-            //name of the loaded checkpoint
-            checkpointTag = playerData.checkpointTag;
+                //name of the loaded checkpoint
+                checkpointTag = playerData.checkpointTag;
 
-            //gets the list its children
-            Transform[] childrenObj = tileObject.GetComponentsInChildren<Transform>();
+                //gets the list its children
+                Transform[] childrenObj = tileObject.GetComponentsInChildren<Transform>();
 
-            foreach(Transform obj in childrenObj){
-                //if name matches with checkpointTag, change the state
-                if (obj.name == checkpointTag){
-                    CheckpointScript objScript = obj.GetComponent<CheckpointScript>();
-                    objScript.ChangeState();
-                    break;
+                foreach(Transform obj in childrenObj){
+                    //if name matches with checkpointTag, change the state
+                    if (obj.name == checkpointTag){
+                        CheckpointScript objScript = obj.GetComponent<CheckpointScript>();
+                        objScript.ForceWave();
+                        break;
+                    }
                 }
             }
+            else
+                Debug.Log("Data is for the different map. Data is not loaded");
         }
+    }
+
+    public static void SetHpUI(int newHP){
+        health = newHP;
     }
 
     //when player dies
     public void GameOver(){
         //save the current score at PlayerPrefs
         PlayerPrefs.SetInt("CurrentScore", score);
-        _Move("GameOverScene");
-
+        _Move(SceneIndex.GameOver);
     }
 
     //when stage has been completed
     public void StageComplete(){
         //save the current score at PlayerPrefs
         PlayerPrefs.SetInt("CurrentScore", score);
-        _Move("StageCompleteScene");
+        _Move(SceneIndex.StageComplete);
 
     }
 
@@ -155,7 +182,7 @@ public class GameplayScript : PublicScripts
 
     //DevTools
     public void Restart(){
-        if (File.Exists(savePath)){
+        if (File.Exists(saveLoadPlayer.savePath)){
             Load();
         }
         else{
@@ -163,13 +190,18 @@ public class GameplayScript : PublicScripts
         }
     }
 
+    /*
+        HOTKEYS
+            r - Restart
+            c - Erase Data
+            esc - Pause
+    */
     void Update(){
         if(Input.GetKey("r")){
             Restart();
         }
         else if(Input.GetKey("c")){
-            ClearData();
-            Debug.Log("Data has been erased!");
+            saveLoadPlayer.ClearData();
         }
         else if(Input.GetKeyDown(KeyCode.Escape)){
             _TogglePause();
@@ -184,25 +216,9 @@ public class GameplayScript : PublicScripts
         
     }
 
-    void FixedUpdate(){
-        if(player.transform.position.y < 0){
-            GameOver();
-        }
-    }
-
     void LateUpdate()
     {
-        Text scoreTxt = scoreTxtObject.GetComponent<Text>();
-        scoreTxt.text = "" + score;
+        scoreTxt.text = $"{score}";
+        hpTxt.text = health.ToString();
     }
-}
-
-[System.Serializable]
-class PlayerData{
-    public int score;
-    public float[] coords;
-    public string projectileName;
-
-    //checkpoint data
-    public string checkpointTag;
 }

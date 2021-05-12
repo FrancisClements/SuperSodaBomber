@@ -73,7 +73,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: 05a72bcd519474a4a97eae27f73f161e, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 4e559b468fd5e2f41a57763cbc7254e1, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -81,7 +81,7 @@ SpriteRenderer:
   m_Size: {x: 2, y: 2}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!50 &6203182048443516712
@@ -117,14 +117,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 652d676bc4a62b94a8d4f3ec1e5787c9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  savePath: 
-  type: 2
+  onSceneMove: {fileID: 0}
+  scriptObject: {fileID: 11400000, guid: 3c1bda80b4cd56840889ad911d7c2d6e, type: 2}
   rigid: {fileID: 6203182048443516712}
   layersToCollide:
     serializedVersion: 2
-    m_Bits: 2560
-  explosion: {fileID: 6203182048443516713, guid: c38daf180662e1b449aa58be32e090e3,
-    type: 3}
+    m_Bits: 18944
 --- !u!198 &198502249970297684
 ParticleSystem:
   m_ObjectHideFlags: 0
@@ -4807,7 +4805,7 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 0.25, y: 0.25}
+    oldSize: {x: 0.5, y: 0.5}
     newSize: {x: 2, y: 2}
     adaptiveTilingThreshold: 0.5
     drawMode: 0

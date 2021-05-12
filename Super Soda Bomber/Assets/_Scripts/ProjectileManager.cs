@@ -2,7 +2,7 @@
 using System.Collections;
 
 /*
-Projectile
+Projectile Manager
     Responsible for handling the projectile properties
     and its behavior such as handling how the projectile
     explodes
@@ -10,54 +10,77 @@ Projectile
 
 public class ProjectileManager : PublicScripts
 {
-    //selects what kind of projectile is it to change the properties
-    [HideInInspector]
-    public enum Type{
-        Bomb, Pistol, Cluster, smallCluster, Shotgun, pellet
-    }
-
-    //the selected property
-    public Type type;
+    [SerializeField] private Projectile_ScriptObject scriptObject;    //projectile scriptable object
 
     //projectile attributes
     private bool playerMoving;          //is the player fires while moving
     public Rigidbody2D rigid;           //rigidbody2D of the projectile prefab
     private Projectile s_Projectile;    //projectile script of the prefab
 
-    //determines on what destroys the projectile
+    //determines on which layers destroys the projectile
     [SerializeField] private LayerMask layersToCollide;
 
-    //particle system (explosion)
-    public GameObject explosion;
-
-    //asynchronous work
+    //used on detonations
     public Coroutine coro;
+
+    //forces projectile to destroy itself with the time limit
+    private float spawnDuration = 5f;
 
     void Awake()
     {
         //adds component
         s_Projectile = ProjectileProcessor.ConfigureComponent(gameObject);
         //activates delayed detonation for some projectiles
-        explosionType explodeType = GetExplosionType();
+        ExplosionType explodeType = GetExplosionType();
 
-        if (explodeType == explosionType.Delay ||
-            explodeType == explosionType.Detonate)
+        /*
+            CASE 1:
+                - if it's animated projectile
+                - AND the sprite list size isn't 0
+                - AND the script inherits IAnimatedProjectile interface
+
+            CASE 2:
+                - if projectile is either a delay or detonate-type
+
+            CASE 3:
+                - if projectile is an instant-type
+        */ 
+
+        if (explodeType == ExplosionType.Delay ||
+            explodeType == ExplosionType.Detonate)
                 coro = StartCoroutine(WaitUntilDetonate());
 
         //instantly explode this one because why not
-        else if (explodeType == explosionType.Instant)
-            ExplodeProjectile();
+        else if (explodeType == ExplosionType.Instant)
+            ExplodeProjectile(scriptObject.explosionPrefab, scriptObject.explosionAmount);
+        
+        else
+            coro = StartCoroutine(SetDespawnTime());
     }
 
     void Start(){
         //central throwing attributes
-        s_Projectile.Init(rigid, playerMoving);
+        s_Projectile.Init(scriptObject, rigid, playerMoving);
+        s_Projectile.GetDamageLayer(layersToCollide);
+
+        if (typeof(IAnimatedProjectile).IsAssignableFrom(s_Projectile.GetType())){
+
+                //convert script into animated projectile class
+                var s_animProj = (IAnimatedProjectile) s_Projectile;
+                
+                //call the custom detonation
+                if (coro != null)
+                    StopCoroutine(coro);
+
+                coro = StartCoroutine(s_animProj.WaitUntilDetonate());
+        }
     }
 
     void OnTriggerEnter2D(Collider2D col){
         //detects whether if the projectile collides with the map or the enemy
         if ((layersToCollide.value & 1 << col.gameObject.layer) != 0 && 
-            (GetExplosionType() != explosionType.Delay)){
+            (GetExplosionType() != ExplosionType.Delay) && 
+            col.gameObject.tag != "WallDetector"){
             //if it collides, activate the particle effect and then destroy the Bomb projectile.
             ExplodeProjectile(col);
         }
@@ -76,6 +99,14 @@ public class ProjectileManager : PublicScripts
     }
 
     /// <summary>
+    /// Sets the timer for despawning
+    /// </summary>
+    private IEnumerator SetDespawnTime(){
+        yield return new WaitForSeconds(spawnDuration);
+        DetonateProjectile();
+    }
+
+    /// <summary>
     /// Explodes the projectile without the use of colliders
     /// </summary>
     public void DetonateProjectile(){
@@ -85,12 +116,21 @@ public class ProjectileManager : PublicScripts
     /// <summary>
     /// Explodes the projectile.
     /// </summary>
-    /// <param name="col">collider message</param>
+    /// <param name="col">Collider Info</param>
     public void ExplodeProjectile(Collider2D col = null){
-        s_Projectile.Explode(col, explosion);
+        s_Projectile.Explode(col);
         Destroy(gameObject);
     }
 
+    /// <summary>
+    /// Explodes the projectile instantly.
+    /// </summary>
+    /// <param name="prefab">Explosion Prefab</param>
+    /// <param name="amount">Amount of Explosion</param>
+    public void ExplodeProjectile(GameObject prefab, int amount){
+        s_Projectile.Explode(prefab, amount);
+        Destroy(gameObject);
+    }
     //getters and setters
     /// <summary>
     /// Updates the PlayerMoving.
@@ -101,8 +141,8 @@ public class ProjectileManager : PublicScripts
     }
 
     /// <returns>Explosion Type of the projectile</returns>
-    public Projectile.explosionType GetExplosionType(){
-        return s_Projectile.selectedType;
+    public ExplosionType GetExplosionType(){
+        return scriptObject.explosionType;
     }
 
     /// <returns>Projectile Name</returns>
@@ -112,6 +152,6 @@ public class ProjectileManager : PublicScripts
 
     /// <returns>Detonation Time of the Projectile</returns>
     public float GetDetonateTime(){
-        return s_Projectile.detonateTime;
+        return scriptObject.detonateTime;
     }
 }

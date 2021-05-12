@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using System;
 
 /*
     Projectile
@@ -12,7 +11,7 @@ using System;
             Soda Bomb
             Fizztol (Pistol)
             Cannade (Cluster Bomb)
-            Sfizz (Shotgun)
+            Spazz (Shotgun)
 
         Enemy
             Milk Shooter
@@ -20,100 +19,235 @@ using System;
 
 */
 
-//main class. all projectiles will inhertit this class
+/// <summary>
+/// Inteface for Animated Projectiles
+/// </summary>
+public interface IAnimatedProjectile{
+    IEnumerator WaitUntilDetonate();
+}
+
+/// <summary>
+/// Base class for all projectiles. (required to inherit)
+/// </summary>
 public abstract class Projectile: PublicScripts{
-
-    /*it turns out that using "protected" keyword can be used
-    by the class itself and by the class that inherits it.
+    public string p_name = "SodaBomb";                          //tag name
+    public bool usesCustomDetonation = false;                   //projectile uses custom detonation
+    protected Projectile_ScriptObject so;                       //scriptable object
+    protected List<string> targetLayers = new List<string>();   //enlists the target layers
     
-    while "private" keyword can be used by the class itself.*/
+    protected List<Sprite> sprites;
 
+    //data to save
+    protected float throwX, throwY, spin;
+    protected float detonateTime, blastRadius;
 
-    //metadata
-    /// <summary>Projectile name</summary>
-    public string p_name = "sodaBomb";
+    /// <summary>
+    /// Initializes the projectile class.
+    /// </summary>
+    /// <param name="scriptObject">Projectile Scriptable Object</param>
+    /// <param name="rigid">Projectile RigidBody 2D</param>
+    /// <param name="isMoving">Player's movement state</param>
+    public virtual void Init(Projectile_ScriptObject scriptObject, 
+    Rigidbody2D rigid, bool isMoving){
 
-    //projectile attributes
-    //throwing physics
-    protected float throwX = 3f,
-                    throwY = 250f,
-                    spin = 200f,
-                    gravity = 1f;
-    
-    //explosion attributes
-    protected float blastRadius = 2.5f;
-    /// <summary>Provides blast damage + explosion fx </summary>
-    protected bool isExplosive = true;
-    /// <summary>Selected Explosion Type</summary>
-    public explosionType selectedType;
-    /// <summary>Time until the projectile explodes by itself</summary>
-    public float detonateTime = 0f;
+        //initialize variables
+        so = scriptObject;
 
+        spin = so.spin;
+        throwX = so.throwX;
+        throwY = so.throwY;
+        detonateTime = so.detonateTime;
+        blastRadius = so.blastRadius;
 
-    //moving player mechanic 
-    /// <summary>Adds a multiplier to throwX when the player is moving</summary>
-    protected float throwingMultiplier = 2.5f;
-    protected bool applyMovingMechanic = true;
+        //used on projectiles that uses random-generated numbers
+        ConfigVariables();
 
-    public virtual void Init(Rigidbody2D rigid, bool isMoving){
-        rigid.gravityScale = gravity;
+        //sets the throwing physics
+        rigid.gravityScale = so.gravity ? 1 : 0;
         rigid.AddForce(new Vector2(0f, throwY));
         rigid.AddTorque(spin);
 
         //apply the moving player mechanic
-        if (isMoving && applyMovingMechanic)
-            throwX *= throwingMultiplier;
+        if (isMoving && so.applyMovingMechanic)
+            throwX *= so.throwingMultiplier;
 
         rigid.velocity = transform.right * throwX;
     }
 
-    //virtual enables overriding of functions on inherited classes
+    /// <summary>
+    /// Further configures projectile variables. (optional)
+    /// </summary>
+    protected virtual void ConfigVariables(){}
 
-    public virtual void Explode(Collider2D col = null, GameObject explosion = null){
-        //if it's not an explosive and directly hits the enemy and collider is not empty
-        if (col != null && col.gameObject.tag == "Enemy" && !isExplosive){
-            var enemyScript = col.gameObject.GetComponent<Enemy>();
+    protected virtual void Awake(){
+        p_name = this.GetType().FullName;
+    }
 
-            //checks whether it has the key from PublicScripts.cs
-            try{
-                GameplayScript.current.AddScore(projScores[p_name]);
-                enemyScript.Damage(projDamage[p_name]);            
-            }
+    /// <summary>
+    /// Determines which layer/s that the projectile must take damage to.
+    /// </summary>
+    /// <param name="layers">Layers that destroys the projectile</param>
+    public void GetDamageLayer(LayerMask layers){
+        //if the layers have the "enemy" checked,
+        if ((layers.value & 1 << LayerMask.NameToLayer("Enemy")) != 0){
+            //add it to layers to damage
+            targetLayers.Add("Enemy");
+        }
 
-            catch (KeyNotFoundException){
-                Debug.LogError($"Key '{p_name}' cannot be found at the PublicScripts.cs.");
-                enemyScript.Damage(25);           
+        //if the layers have the "bossenemy" checked,
+        if ((layers.value & 1 << LayerMask.NameToLayer("EnemyBoss")) != 0){
+            //add it to layers to damage
+            targetLayers.Add("EnemyBoss");
+        }
+
+        //if it's player on the other hand,
+        if ((layers.value & 1 << LayerMask.NameToLayer("Player")) != 0){
+            targetLayers.Add("Player");
+        }
+    }
+
+    /// <summary>
+    /// Verifies whether the projectile hits a target.
+    /// </summary>
+    /// <param name="layer">Projectile hits into</param>
+    /// <returns>Target Layer (null if it's not)</returns>
+    protected string VerifyLayer(LayerMask layer){
+
+        //checks if it the layer is a target layer.
+        foreach (string target in targetLayers)
+        {
+            //if it does, return the name
+            if ((LayerMask.GetMask(target) & 1 << layer.value) != 0){
+                return target;
             }
         }
-        else{
-            //gets a circlecast to get enemies that are within the blast radius
+        return null;
+    }
+
+    /// <summary>
+    /// Explodes the projectile.
+    /// </summary>
+    /// <param name="col">Projectile hits into</param>
+    public void Explode(Collider2D col = null){
+
+        //make target name null as default
+        string targetName = null;
+
+        //checks if the collider is a target
+        if (col != null)
+            targetName = VerifyLayer(col.gameObject.layer);
+
+        //if it does not deal splash damage and hits the target
+        if (col != null && targetName != null && !so.isSplashDamage){
+
+            //gets the damageable script from the collider
+            var targetScript = col.gameObject.GetComponent<IDamageable>();
+
+            //if it's not a target, or the target just died, do nothing.
+            if (targetScript == null)
+                return;            
+
+            //if target is an enemy
+            if (targetName == "Enemy" || targetName == "EnemyBoss"){
+
+                //checks whether it has the key from PublicScripts.cs
+                if (projScores.ContainsKey(p_name)){
+                    //add the score and its damage
+                    GameplayScript.current.AddScore(projScores[p_name]);
+                    targetScript.Damage(projDamage[p_name]);  
+                }
+                else{
+                    Debug.LogError($"Key '{p_name}' cannot be found at the PublicScripts.cs.");
+                    //take default damage
+                    targetScript.Damage(25);     
+                }
+            }
+
+            //if target is the player
+            else if (targetName == "Player"){
+                targetScript.Damage();
+            }
+        }
+
+        //if it deals splash damage on the other hand...
+        else if (so.isSplashDamage){
+
+            //get a circlecast to get enemies that are within the blast radius
             var g_Collider = gameObject.GetComponent<BoxCollider2D>();
-            Collider2D[] colliders = Physics2D.OverlapCircleAll(gameObject.transform.position, blastRadius);
+            Collider2D[] colliders = Physics2D.OverlapCircleAll(gameObject.transform.position, so.blastRadius);
 
             if(colliders.Length != 0){
                 for(int i = 0; i< colliders.Length; ++i){
-                    if(colliders[i].gameObject.tag == "Enemy"){
-                        //gets the distance between the enemy and the bomb
+                    //checks if the collider is a target
+                    targetName = VerifyLayer(colliders[i].gameObject.layer);
+
+                    //if it hits a target
+                    if(targetName != null){
+                        //gets the distance between the target and the bomb
                         float distance = colliders[i].Distance(g_Collider).distance;
-                        var enemyScript = colliders[i].gameObject.GetComponent<Enemy>();
-                        //damage the enemy
-                        enemyScript.Damage(GetSplashDamage(Mathf.Abs(distance)));
+                        var targetScript = colliders[i].gameObject.GetComponent<IDamageable>();
+
+                        //if the target just died, don't damage it anymore
+                        if (targetScript == null)
+                            continue;
+                        
+                        if (targetName == "Enemy" || targetName == "EnemyBoss")
+                            targetScript.Damage(GetSplashDamage(Mathf.Abs(distance)));
+                        else if (targetName == "Player")
+                            targetScript.Damage();
                     }
                 }   
             }
         }
 
-        if(explosion != null)
-            Instantiate(explosion, gameObject.transform.position, Quaternion.identity);
+        //call the explosion fx
+        InvokeExplosionFX();
     }
 
+    /// <summary>
+    /// Instantiate the explosion instantly.
+    /// </summary>
+    /// <param name="prefab">Explosion GameObject</param>
+    /// <param name="amount">Amount of Explosion</param>
+    public void Explode(GameObject prefab, int amount){
+        for (int a = 0; a < amount; a++){
+            Instantiate(prefab, transform.position, transform.rotation);
+        }
+    }
+
+    /// <summary>
+    /// Instantiates the explosion according to its amount.
+    /// </summary>
+    protected void InvokeExplosionFX(){
+        if (so.isExplosive){
+            for (int amount = 0; amount < so.explosionAmount; amount++)
+            {
+                SpawnExplosion();
+            }
+        }
+    }
+
+    /// Optional for projectiles that require specific transform
+    /// <summary>
+    /// Spawns an explosion.
+    /// </summary>
+    protected virtual void SpawnExplosion(){
+        Instantiate(so.explosionPrefab, transform.position, Quaternion.identity);
+    }
+
+    /// <summary>
+    /// Calculates the splash damage according to distance.
+    /// </summary>
+    /// <param name="e_Distance">Distance from the projectile</param>
+    /// <returns>Splash damage</returns>
     protected float GetSplashDamage(float e_Distance){
         //inverts the value (closer distance, higher intensity)
-        e_Distance = blastRadius - e_Distance;
+        e_Distance = so.blastRadius - e_Distance;
 
         //gets the intensity (0% - 100%)
-        float intensity = Mathf.RoundToInt((e_Distance/blastRadius)*100);
+        float intensity = Mathf.RoundToInt((e_Distance/so.blastRadius)*100);
         
+        //checks if the projectile name is listed at the dictionary
         try
         {
             if (intensity < 20) {
@@ -131,6 +265,7 @@ public abstract class Projectile: PublicScripts{
         }
         catch (KeyNotFoundException)
         {
+            //if not, return default value.
             Debug.LogError($"Key '{p_name}' is missing at the PublicScripts.cs.");
             return 25f;           
         }
@@ -154,23 +289,10 @@ public class SodaBomb: Projectile{}
         It attacks enemy on contact and doesn't explode.
 */
 
-public class Fizztol: Projectile{
-
-    void Awake(){
-        p_name = "fizztol";
-        //throwing physics
-        throwX = 4f;
-        throwY = 0;
-        gravity = 0;
-
-        //explosion & player moving mechanic
-        isExplosive = false;
-        applyMovingMechanic = false;
-    }
-}
+public class Fizztol: Projectile{}
 
 /*
-    Cannad
+    Cannade
         A projectile that fires on a curve. When detonate 
         or waited within several seconds, it will let out
         a small group of cluster bombs
@@ -178,21 +300,9 @@ public class Fizztol: Projectile{
 
 public class Cannade: Projectile{
 
-    private int clusterAmount = 5;
-
-    void Awake(){
-        selectedType = explosionType.Detonate;
-        spin = 10f;
-        p_name = "cannade";
-        detonateTime = 2f;
-
-    }
-
-    public override void Explode(Collider2D col, GameObject explosion){
-        //spawns small cluster bomb
-        for (int i = 0; i < clusterAmount; ++i){
-            Instantiate(explosion, gameObject.transform.position, ForceRotation());
-        }
+    //overrides the instantiate code and uses ForceRotation()
+    protected override void SpawnExplosion(){
+        Instantiate(so.explosionPrefab, gameObject.transform.position, ForceRotation());
     }
 
     //forces the z rotation to 0 or 180
@@ -210,99 +320,60 @@ public class Cannade: Projectile{
         It provides a small blast radius, damage and explodes in set time
 */
 
-public class SmallCluster: Projectile{
+public class SmallCluster: Projectile, IAnimatedProjectile{
+    Animator animator;
 
-    
-    void Awake(){
-        p_name = "smallCluster";
-        selectedType = explosionType.Delay;
-        throwX *= UnityEngine.Random.Range(-.25f, 1.15f);
+    //adds a random number generator for throwing physics
+    protected override void ConfigVariables(){
+        throwX = 3f * UnityEngine.Random.Range(-.25f, 1.15f);
         throwY = UnityEngine.Random.Range(-100,100);
-        blastRadius = 1.5f;
-        applyMovingMechanic = false;
-        detonateTime = 3f + UnityEngine.Random.Range(0f, .25f);
+        detonateTime += UnityEngine.Random.Range(0f, .25f);
+        animator = gameObject.GetComponent<Animator>();
+    }
+
+    //custom detonation event
+    public IEnumerator WaitUntilDetonate(){
+
+        //uses the 1st sprite and then wait for 50% of detonate time
+        yield return new WaitForSeconds(detonateTime/2f);
+        //repeat
+        animator.SetTrigger("transition");
+        yield return new WaitForSeconds(detonateTime/2f);
+
+        Explode();
+        Destroy(gameObject);
     }
 }
 
 /* 
-    Shotgun (Sfizz)
+    Shotgun (Spazz)
         Fires short-ranged scattered pellets.
         Only used to spawn its pellets and then destroy itself
 */
 
-public class Shotgun: Projectile{
-
-    private int pellets = 8;
-    private Vector3 attackSource;
-
-    void Awake(){
-        p_name = "shotgun";
-        selectedType = explosionType.Instant;
-        //lowers the y-value for attack source of the pellets
-        // attackSource = gameObject.transform.position + new Vector3(.2f, -.45f, 0f);
-    }
-
-    public override void Explode(Collider2D col, GameObject explosion){
-        for(int i = 0; i < pellets; ++i){
-            Instantiate(explosion, gameObject.transform.position, gameObject.transform.rotation);
-        }
-    }
-}
+public class Shotgun: Projectile{}
 
 /*
-    Shotgun Pellet (Sfizz) (internal)
+    Shotgun Pellet (Spazz internal)
         Small projectiles that inflict large damage the closer it hits the enemy
         It has a short reach.
 */
 
 public class Pellet: Projectile{
-    private float distance = 0f;
     private float maxDistance = 5f;
     private Vector3 oldDistance;
-    private Vector3 newDistance;
 
-
-    void Awake(){
-        p_name = "shotgun";
-        //adds randomized x and y properties
+    //adds randomized x and y properties
+    protected override void ConfigVariables(){
         throwY = UnityEngine.Random.Range(-35f, 50f);
-        throwX += 1.5f + UnityEngine.Random.Range(-.75f, 1.2f);
-        gravity = 0;
-        applyMovingMechanic = false;
+        throwX += UnityEngine.Random.Range(-.75f, 1.2f);
         oldDistance = gameObject.transform.position;
     }
 
-
-    public override void Explode(Collider2D col = null, GameObject explosion = null)
-    {
-        if (col != null && col.gameObject.tag == "Enemy"){
-            newDistance = gameObject.transform.position;
-            var enemyScript = col.gameObject.GetComponent<Enemy>();
-
-            //gets the distance, damage it and adds the score
-            try{
-                GameplayScript.current.AddScore(projScores[p_name]);
-                enemyScript.Damage(projDamage[p_name]);            
-            }
-
-            catch (KeyNotFoundException){
-                Debug.LogError($"Key '{p_name}' cannot be found at the PublicScripts.cs.");
-                enemyScript.Damage(25);           
-            }
-        }
-
-        //explosion fx
-        if (explosion != null){
-            Instantiate(explosion, gameObject.transform.position, gameObject.transform.rotation);
-        }
-    }
-
+    //updates the distance. if it exceeds the max distance, despawn
     void Update(){
-        //updates the distance. if it exceeds the max distance, despawn
-        distance = GetDistance(gameObject.transform.position);
-        if (distance >= maxDistance)
+        if (GetDistance(gameObject.transform.position) >= maxDistance)
             Destroy(gameObject);
-        newDistance = gameObject.transform.position;
 
     }
 
@@ -311,4 +382,20 @@ public class Pellet: Projectile{
         return gap.sqrMagnitude;
     }
     
+}
+
+//ENEMY PROJECTILE TYPES
+
+/*
+    Shooter Projectile
+        Fires and travels slowly at a line, pointing at the player.
+*/
+
+public class ShooterProjectile: Projectile{}
+
+public class MilcherMachineGun: Projectile{
+    protected override void ConfigVariables()
+    {
+        throwY += UnityEngine.Random.Range(-15f, 15f);
+    }
 }

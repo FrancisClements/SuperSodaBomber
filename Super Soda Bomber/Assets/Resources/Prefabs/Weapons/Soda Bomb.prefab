@@ -73,12 +73,12 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: 05a72bcd519474a4a97eae27f73f161e, type: 3}
+  m_Sprite: {fileID: 21300000, guid: b6b250368e4aa714a9ac049af0006264, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_FlipX: 0
+  m_FlipX: 1
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 2, y: 2}
+  m_Size: {x: 0.25, y: 0.25}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -123,7 +123,7 @@ BoxCollider2D:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
     oldSize: {x: 0.25, y: 0.25}
-    newSize: {x: 2, y: 2}
+    newSize: {x: 0.25, y: 0.25}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0
@@ -143,13 +143,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 652d676bc4a62b94a8d4f3ec1e5787c9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  type: 0
+  onSceneMove: {fileID: 0}
+  scriptObject: {fileID: 11400000, guid: c9ce46326d81cc249a90baf15bf993bd, type: 2}
   rigid: {fileID: 6203182048443516712}
   layersToCollide:
     serializedVersion: 2
-    m_Bits: 2560
-  explosion: {fileID: 6199953446600296795, guid: a9bfa17f516efea4884dff4eb5bc0e63,
-    type: 3}
+    m_Bits: 18944
 --- !u!198 &198502249970297684
 ParticleSystem:
   m_ObjectHideFlags: 0

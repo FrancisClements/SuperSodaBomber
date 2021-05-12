@@ -1,9 +1,8 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.EventSystems;
 
-/*Detect Button Press
+/*
+Detect Button Press
 	Used for buttons that want to detect whether the player
 	pressed down/released the button
 
@@ -22,7 +21,7 @@ public class DetectButtonPress : MonoBehaviour, IPointerDownHandler, IPointerUpH
 		isPressed = false;
 	}
 
-	public bool getPressedStatus(){
+	public bool GetPressedStatus(){
 		return isPressed;
 	}
 }
