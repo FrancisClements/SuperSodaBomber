@@ -122,4 +122,10 @@ public class PlayerAttack : PublicScripts
         }
 	}
 
+    public void ChangeProjectile(PlayerProjectiles newProjectile){
+        chosenProjectile = newProjectile;
+        projectilePrefab = ProjectileProcessor.GetPrefab(chosenProjectile);
+        projectileName = ProjectileProcessor.GetProjectileName();
+    }
+
 }

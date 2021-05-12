@@ -13,7 +13,8 @@ Powerup
 /// Abilities that enhances one of the player's stats at game proper.
 /// </summary>
 public class Powerup: MonoBehaviour{
-    public enum PowerupType{SugarRush, OneUP}       //powerup types
+    public enum PowerupType{SugarRush, OneUP,
+        Fizztol, Shotgun}       //powerup types
     public PowerupType key;                         //selected powerup
 
     private IPowerup powerupComponent;              //powerup script
@@ -35,6 +36,18 @@ public class Powerup: MonoBehaviour{
                 //calls the UI
                 UICooldownDebug.current.CallCooldownUI("SugarRush",
                     "score", obj.abilityDuration);
+                break;
+            case PowerupType.Fizztol:
+                var fizztolObj = new Powerup_Fizztol();
+                playerControl.AddPowerup(fizztolObj);
+
+                UICooldownDebug.current.CallCooldownUI("Fizztol", "score", fizztolObj.abilityDuration);
+                break;
+            case PowerupType.Shotgun:
+                var shotObj = new Powerup_Shotgun();
+                playerControl.AddPowerup(shotObj);
+
+                UICooldownDebug.current.CallCooldownUI("Shotgun", "score", shotObj.abilityDuration);
                 break;
             case PowerupType.OneUP:
                 playerControl.AddPowerup(new OneUP());
@@ -95,6 +108,60 @@ public class OneUP: IPowerup{
 
         //call the function and then remove the powerup
         playerHealth.AddHP();
+        playerControl.RemovePowerup(this);
+    }
+}
+
+//Powerup_Fizztol
+public class Powerup_Fizztol: IPowerup, IDurationPowerup{
+    private PlayerProjectiles oldProjectile;
+    private PlayerAttack playerAttack;
+    private PlayerControl playerControl;
+    public float abilityDuration { get; private set; } = 10; //how long the effect last
+
+    public void Apply(GameObject player){
+        playerControl = player.GetComponent<PlayerControl>();
+        playerAttack = player.GetComponent<PlayerAttack>();
+
+        if (playerAttack.chosenProjectile == PlayerProjectiles.Undefined)
+            oldProjectile = PlayerProjectiles.SodaBomb;
+        else
+            oldProjectile = playerAttack.chosenProjectile;
+
+        Debug.Log($"Old Projectile: {oldProjectile}");
+        playerAttack.ChangeProjectile(PlayerProjectiles.Fizztol);
+    }
+
+    public IEnumerator AbilityEffect(){
+        yield return new WaitForSeconds(abilityDuration);
+        playerAttack.ChangeProjectile(oldProjectile);
+        playerControl.RemovePowerup(this);
+    }
+}
+
+//Powerup_Shotgun
+public class Powerup_Shotgun: IPowerup, IDurationPowerup{
+    private PlayerProjectiles oldProjectile;
+    private PlayerAttack playerAttack;
+    private PlayerControl playerControl;
+    public float abilityDuration { get; private set; } = 10; //how long the effect last
+
+    public void Apply(GameObject player){
+        playerControl = player.GetComponent<PlayerControl>();
+        playerAttack = player.GetComponent<PlayerAttack>();
+
+        if (playerAttack.chosenProjectile == PlayerProjectiles.Undefined)
+            oldProjectile = PlayerProjectiles.SodaBomb;
+        else
+            oldProjectile = playerAttack.chosenProjectile;
+
+        Debug.Log($"Old Projectile: {oldProjectile}");
+        playerAttack.ChangeProjectile(PlayerProjectiles.Shotgun);
+    }
+
+    public IEnumerator AbilityEffect(){
+        yield return new WaitForSeconds(abilityDuration);
+        playerAttack.ChangeProjectile(oldProjectile);
         playerControl.RemovePowerup(this);
     }
 }

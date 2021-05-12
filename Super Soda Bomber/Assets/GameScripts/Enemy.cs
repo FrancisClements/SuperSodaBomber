@@ -68,7 +68,6 @@ namespace SuperSodaBomber.Enemies{
         //returns true if the enemy is within the radius
         protected bool FindTarget(float radius){
             playerPos = PlayerMovement.playerPos;
-            Debug.Log($"{Vector3.Distance(transform.position, playerPos)} vs {radius}");
             return (Vector3.Distance(transform.position, playerPos)  < radius);
         }
 
@@ -164,9 +163,6 @@ namespace SuperSodaBomber.Enemies{
                         break;
                     case EnemyState.Attack:
                         //if it's within attacking range and it's within fire rate
-
-                        Debug.Log($"C1: {outer.FindTarget(outer.attackRadius)}");
-                        Debug.Log($"C2: {Time.time > shootTime}");
                         if (outer.FindTarget(outer.attackRadius) && Time.time > shootTime){
                             Debug.Log(outer.currentState);
 
